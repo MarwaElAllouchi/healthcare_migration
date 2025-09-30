@@ -18,10 +18,18 @@ jobs:
         ports:
           - 27017:27017
         env:
-          MONGO_INITDB_ROOT_USERNAME: root
-          MONGO_INITDB_ROOT_PASSWORD: root
+          MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+          MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+          READER_USER: ${{ secrets.MONGO_USER1 }}
+          READER_PASS: ${{ secrets.MONGO_PASSWORD1 }}
+          MANAGER_USER: ${{ secrets.MONGO_USER2 }}
+          MANAGER_PASS: ${{ secrets.MONGO_PASSWORD2 }}
+          ROOT_USER: ${{ secrets.MONGO_ROOT_USERNAME }}
+          ROOT_PASS: ${{ secrets.MONGO_ROOT_PASSWORD }}
+          DB_NAME:  ${{ secrets.MONGO_DATABASE }}
+
         options: >-
-          --health-cmd "mongo --eval 'db.adminCommand(\"ping\")'" 
+          --health-cmd "mongo --username ${{ secrets.MONGO_ROOT_USERNAME }} --password ${{ secrets.MONGO_ROOT_PASSWORD }} --eval 'db.adminCommand(\"ping\")'" 
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -51,6 +59,10 @@ jobs:
 
       # 5️⃣ Lancer le script de migration
       - name: Run migration script
+        env:
+          MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+          MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+       
         run: |
           python scripts/migrate_patients.py
 
