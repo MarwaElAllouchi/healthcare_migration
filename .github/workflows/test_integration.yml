@@ -17,8 +17,8 @@ jobs:
         image: mongo:7.0
         ports:
           - 27017:27017
-        # Pour le conteneur MongoDB, on utilise un root par défaut temporaire
         env:
+          # Root temporaire pour le conteneur, utilisé par init script
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: root
         options: >-
