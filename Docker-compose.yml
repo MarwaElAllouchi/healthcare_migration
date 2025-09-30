@@ -1,0 +1,38 @@
+services:
+  mongo_db:
+    image: mongo:7.0
+    container_name: healthcare_migration-mongo_db
+    networks:
+     - my_netwrok
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    volumes:
+      - mongo_data:/data/db
+      - ./init-scripts:/docker-entrypoint-initdb.d
+ 
+  migration:
+    build: .
+    container_name: healthcare_migration-migration
+    depends_on:
+      - mongo_db
+    networks:
+      - my_netwrok
+    environment:
+      MONGO_HOST: mongo_db
+      MONGO_PORT: 27017
+      MONGO_DB: ${MONGO_DATABASE}
+      MONGO_COLLECTION: patients
+      CSV_PATH: data/healthcare_dataset.csv
+      MONGO_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    volumes:
+      - .:/app
+networks:
+  my_netwrok:
+    name: healthcare_migration_network
+volumes:
+  mongo_data:
