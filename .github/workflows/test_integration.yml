@@ -3,9 +3,11 @@ name: Test Intégrité Projet
 on:
   push:
     branches:
-      - workflow_test
+      - main
+      - workflow_test   # Nouveau branch pour tests
   pull_request:
     branches:
+      - main
       - workflow_test
 
 jobs:
@@ -18,9 +20,13 @@ jobs:
         ports:
           - 27017:27017
         env:
-          # root temporaire pour démarrage
+          # Root temporaire pour le conteneur Mongo
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: root
+        options: >-
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       # 1️⃣ Checkout du code
@@ -42,39 +48,32 @@ jobs:
       # 4️⃣ Télécharger le dataset public
       - name: Download dataset
         run: |
+          pip install kagglehub
           mkdir -p data
           python -c "import kagglehub; kagglehub.dataset_download('prasad22/healthcare-dataset', unzip=True, path='./data')"
 
-      # 5️⃣ Attendre que MongoDB soit prêt
-      - name: Wait for MongoDB
-        run: |
-          until mongosh --host localhost -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &>/dev/null; do
-            echo "Waiting for MongoDB..."
-            sleep 2
-          done
-
-      # 6️⃣ Initialiser les utilisateurs MongoDB avec les secrets
+      # 5️⃣ Initialiser les utilisateurs MongoDB avec les secrets
       - name: Initialize MongoDB users
         env:
           MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
-          MONGO_ROOT_PASSWORD: ${{secrets.MONGO_ROOT_PASSWORD}}
-          READER_USER: ${{secrets.MONGO_USER1}}
-          READER_PASS: ${{secrets.MONGO_PASSWORD1}}
-          MANAGER_USER: ${{secrets.MONGO_USER2}}
-          MANAGER_PASS: ${{secrets.MONGO_PASSWORD2}}
-          DB_NAME: ${{secrets.MONGO_DATABASE}}
+          MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+          READER_USER: ${{ secrets.MONGO_USER1 }}
+          READER_PASS: ${{ secrets.MONGO_PASSWORD1 }}
+          MANAGER_USER: ${{ secrets.MONGO_USER2 }}
+          MANAGER_PASS: ${{ secrets.MONGO_PASSWORD2 }}
+          DB_NAME: ${{ secrets.MONGO_DATABASE }}
         run: |
           bash init-scripts/init-create-users.sh
 
-      # 7️⃣ Lancer le script de migration
+      # 6️⃣ Lancer le script de migration
       - name: Run migration script
         env:
-          MONGO_ROOT_USERNAME: ${{secrets.MONGO_ROOT_USERNAME}}
-          MONGO_ROOT_PASSWORD: ${{secrets.MONGO_ROOT_PASSWORD}}
+          MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+          MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
         run: |
           python scripts/migrate_patients.py
 
-      # 8️⃣ Lancer les tests
+      # 7️⃣ Lancer les tests
       - name: Run tests
         run: |
           python -m unittest discover -s scripts -p "test_*.py"
