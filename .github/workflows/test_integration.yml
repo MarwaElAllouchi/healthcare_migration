@@ -18,15 +18,9 @@ jobs:
         ports:
           - 27017:27017
         env:
-          # Root temporaire pour le conteneur
+          # root temporaire pour démarrage
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: root
-      options: >-
-        --health-cmd "mongo --username root --password root --eval 'db.adminCommand(\"ping\")'"
-        --health-interval 10s
-        --health-timeout 10s
-        --health-retries 10
-
 
     steps:
       # 1️⃣ Checkout du code
@@ -54,15 +48,15 @@ jobs:
       # 5️⃣ Attendre que MongoDB soit prêt
       - name: Wait for MongoDB
         run: |
-          until mongo --host localhost --port 27017 -u root -p root --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
+          until mongosh --host localhost -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &>/dev/null; do
             echo "Waiting for MongoDB..."
-            sleep 5
+            sleep 2
           done
 
       # 6️⃣ Initialiser les utilisateurs MongoDB avec les secrets
       - name: Initialize MongoDB users
         env:
-          MONGO_ROOT_USERNAME: ${{secrets.MONGO_ROOT_USERNAME}}
+          MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
           MONGO_ROOT_PASSWORD: ${{secrets.MONGO_ROOT_PASSWORD}}
           READER_USER: ${{secrets.MONGO_USER1}}
           READER_PASS: ${{secrets.MONGO_PASSWORD1}}
@@ -84,5 +78,3 @@ jobs:
       - name: Run tests
         run: |
           python -m unittest discover -s scripts -p "test_*.py"
-
-
