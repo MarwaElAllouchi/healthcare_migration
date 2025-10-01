@@ -21,11 +21,12 @@ jobs:
           # Root temporaire pour le conteneur
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: root
-        options: >-
-          --health-cmd "mongo --username root --password root --eval 'db.adminCommand(\"ping\")'" 
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+      options: >-
+        --health-cmd "mongo --username root --password root --eval 'db.adminCommand(\"ping\")'"
+        --health-interval 10s
+        --health-timeout 10s
+        --health-retries 10
+
 
     steps:
       # 1️⃣ Checkout du code
@@ -83,4 +84,5 @@ jobs:
       - name: Run tests
         run: |
           python -m unittest discover -s scripts -p "test_*.py"
+
 
