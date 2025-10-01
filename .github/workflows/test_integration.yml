@@ -74,8 +74,8 @@ jobs:
       # 7️⃣ Lancer le script de migration
       - name: Run migration script
         env:
-          MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
-          MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+          MONGO_ROOT_USERNAME: ${{secrets.MONGO_ROOT_USERNAME}}
+          MONGO_ROOT_PASSWORD: ${{secrets.MONGO_ROOT_PASSWORD}}
         run: |
           python scripts/migrate_patients.py
 
@@ -83,3 +83,4 @@ jobs:
       - name: Run tests
         run: |
           python -m unittest discover -s scripts -p "test_*.py"
+
