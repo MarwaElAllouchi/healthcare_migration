@@ -55,21 +55,21 @@ jobs:
       # 5️⃣ Initialiser les utilisateurs MongoDB avec les secrets
       - name: Initialize MongoDB users
         env:
-          MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
-          MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
-          READER_USER: ${{ secrets.MONGO_USER1 }}
-          READER_PASS: ${{ secrets.MONGO_PASSWORD1 }}
-          MANAGER_USER: ${{ secrets.MONGO_USER2 }}
-          MANAGER_PASS: ${{ secrets.MONGO_PASSWORD2 }}
-          DB_NAME: ${{ secrets.MONGO_DATABASE }}
+          MONGO_ROOT_USERNAME: ${{secrets.MONGO_ROOT_USERNAME}}
+          MONGO_ROOT_PASSWORD: ${{ ecrets.MONGO_ROOT_PASSWORD}}
+          READER_USER: ${{secrets.MONGO_USER1}}
+          READER_PASS: ${{secrets.MONGO_PASSWORD1}}
+          MANAGER_USER: ${{secrets.MONGO_USER2}}
+          MANAGER_PASS: ${{secrets.MONGO_PASSWORD2}}
+          DB_NAME: ${{secrets.MONGO_DATABASE}}
         run: |
           bash init-scripts/init-create-users.sh
 
       # 6️⃣ Lancer le script de migration
       - name: Run migration script
         env:
-          MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
-          MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+          MONGO_ROOT_USERNAME: ${{secrets.MONGO_ROOT_USERNAME}}
+          MONGO_ROOT_PASSWORD: ${{secrets.MONGO_ROOT_PASSWORD}}
         run: |
           python scripts/migrate_patients.py
 
