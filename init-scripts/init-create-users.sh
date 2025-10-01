@@ -2,13 +2,13 @@
 # Script pour créer les utilisateurs MongoDB à partir des variables d'environnement
 
 # Lecture des variables d'environnement (venant des secrets GitHub)
-READER_USER=${MONGO_USER1:-readerUser}
-READER_PASS=${MONGO_PASSWORD1:-reader_pass}
-MANAGER_USER=${MONGO_USER2:-managerUser}
-MANAGER_PASS=${MONGO_PASSWORD2:-readerwrite_pass}
-ROOT_USER=${MONGO_ROOT_USERNAME:-rootuser}
-ROOT_PASS=${MONGO_ROOT_PASSWORD:-rootpass}
-DB_NAME=${MONGO_DATABASE:-healthcareDB}
+READER_USER=${READER_USER}
+READER_PASS=${READER_PASS}
+MANAGER_USER=${MANAGER_USER}
+MANAGER_PASS=${MANAGER_PASS}
+ROOT_USER=${MONGO_ROOT_USERNAME}
+ROOT_PASS=${MONGO_ROOT_PASSWORD}
+DB_NAME=${MONGO_DATABASE}
 
 # ⚠️ Root temporaire (celui défini dans docker-compose / workflow)
 TEMP_ROOT_USER=root
