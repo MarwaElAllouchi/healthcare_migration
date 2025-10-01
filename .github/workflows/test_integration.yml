@@ -18,39 +18,35 @@ jobs:
         ports:
           - 27017:27017
         env:
-          # ✅ On utilise directement les secrets GitHub
-          MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
-          MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+          # Valeurs temporaires pour permettre le démarrage
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: root
         options: >-
-          --health-cmd "mongo --username ${{ secrets.MONGO_ROOT_USERNAME }} --password ${{ secrets.MONGO_ROOT_PASSWORD }} --eval 'db.adminCommand(\"ping\")'" 
+          --health-cmd "mongo --username root --password root --eval 'db.adminCommand(\"ping\")'" 
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
     steps:
-      # 1️⃣ Checkout du code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Installer Python
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      # 3️⃣ Installer les dépendances
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4️⃣ Télécharger le dataset public
       - name: Download dataset
         run: |
           mkdir -p data
           python -c "import kagglehub; kagglehub.dataset_download('prasad22/healthcare-dataset', unzip=True, path='./data')"
 
-      # 5️⃣ Initialiser les utilisateurs MongoDB
+      # Étape pour créer les utilisateurs réels avec les secrets
       - name: Initialize MongoDB users
         env:
           MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
@@ -63,7 +59,6 @@ jobs:
         run: |
           bash init-scripts/init-create-users.sh
 
-      # 6️⃣ Lancer le script de migration
       - name: Run migration script
         env:
           MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
@@ -71,8 +66,6 @@ jobs:
         run: |
           python scripts/migrate_patients.py
 
-      # 7️⃣ Lancer les tests
       - name: Run tests
         run: |
           python -m unittest discover -s scripts -p "test_*.py"
-          
