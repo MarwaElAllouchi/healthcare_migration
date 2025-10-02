@@ -46,6 +46,8 @@ jobs:
       # 5️⃣ Initialiser les utilisateurs MongoDB
       - name: Initialize MongoDB users
         env:
+          MONGO_HOST: mongo_db
+          MONGO_PORT: 27017
           MONGO_ROOT_USERNAME: ${{secrets.MONGO_ROOT_USERNAME}}
           MONGO_ROOT_PASSWORD: ${{secrets.MONGO_ROOT_PASSWORD}}
           READER_USER: ${{secrets.MONGO_USER1}}
