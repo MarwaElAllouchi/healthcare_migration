@@ -102,7 +102,8 @@ jobs:
           MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
           MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
           MONGO_COLLECTION: ${{ secrets.MONGO_COLLECTION }}
-          MONGO_DB: ${{ secrets.MONGO_DATABASE || 'healthcareDB' }}
+          MONGO_DB: ${{ secrets.MONGO_DATABASE }}
+          CSV_PATH: data/healthcare_dataset.csv
 
         run: |
           python scripts/migrate_patients.py
