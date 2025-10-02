@@ -1,9 +1,3 @@
-# Lecture des variables d'environnement (venant des secrets GitHub)
-DB_NAME="${DB_NAME:-healthcareDB}"
-READER_USER="${READER_USER:-readerUser}"
-READER_PASS="${READER_PASS:-reader_pass}"
-MANAGER_USER="${MANAGER_USER:-managerUser}"
-MANAGER_PASS="${MANAGER_PASS:-readerwrite_pass}"
 
 # ⚠️ Root temporaire (celui défini dans docker-compose / workflow)
 TEMP_ROOT_USER=root
