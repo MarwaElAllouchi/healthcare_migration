@@ -2,21 +2,23 @@
 
 Ce projet consiste à migrer des données patients depuis un fichier CSV vers MongoDB, gérer les utilisateurs et rôles MongoDB, et permettre l’export et l’import des données.
 Il s’inscrit dans un contexte de scalabilité Big Data pour aider un client à mieux gérer ses données médicales.
-
+    
 📂 Structure du projet
 healthcare_migration
 ├── data/
-│   └── healthcare_dataset.csv       # Fichier source CSV
+│   └── healthcare_dataset.csv        # Fichier source CSV
 ├── scripts/
-│   ├── migrate_patients.py          # Script de migration
-│   ├── test_migration.py            # Tests unitaires
+│   ├── migrate_patients.py           # Script de migration
+│   ├── test_migration.py             # Tests unitaires
 ├── init-scripts/
-│   └── init-create-users.sh         # Création des utilisateurs MongoDB
-├── requirements.txt                 # Dépendances Python
-├── Dockerfile                       # Image migration
-├── docker-compose.yml               # Compose MongoDB + migration
-├── .gitattributes                   # Forcer LF sur les scripts .sh
+│   └── init-create-users.sh          # Création des utilisateurs MongoDB
+├── requirements.txt                  # Dépendances Python
+├── Dockerfile                        # Image migration
+├── docker-compose.yml                # Compose MongoDB + migration
+├── .gitattributes                    # Forcer LF sur les scripts .sh
 └── README.md
+
+
 
 🎯 Contexte du projet
 
@@ -213,5 +215,6 @@ MongoDB Authentication & Roles
 Docker Compose Documentation
 
 PyMongo Documentation
+
 
 GitHub Actions
