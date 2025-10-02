@@ -20,6 +20,11 @@ jobs:
         env:
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: root
+        options: >-
+          --health-cmd "mongosh --host localhost -u root -p root --authenticationDatabase admin --eval 'db.adminCommand(\"ping\")'" 
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       # 1️⃣ Checkout du code
       - name: Checkout repository
