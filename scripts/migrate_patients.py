@@ -105,7 +105,7 @@ def main():
     df = charger_csv(CSV_PATH)
     records = transformer_records(df)
 
-    print(df.shape)
+    print("je suis laaaaaaaaaaaaa",df.shape)
     collection = connecter_mongodb()
     inserer_records(collection, records)
     exporter_collection_csv(collection, EXPORT_PATH)
