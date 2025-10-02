@@ -27,55 +27,58 @@ jobs:
           --health-retries 5
 
     steps:
-      # 1️⃣ Checkout du code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Installer Python
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      # 3️⃣ Installer les dépendances
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4️⃣ Télécharger le dataset directement depuis Kaggle
       - name: Download dataset
         run: |
           mkdir -p data
           curl -L -o data/healthcare_dataset.csv "https://www.kaggleusercontent.com/datasets/prasad22/healthcare-dataset/0/healthcare_dataset.csv"
 
-      # 5️⃣ Initialiser les utilisateurs MongoDB directement dans le conteneur
+      # ✅ Nouvelle étape : attendre que MongoDB soit prêt
+      - name: Wait for MongoDB
+        run: |
+          for i in {1..30}; do
+            if docker exec mongo_db mongo --username root --password root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
+              echo "MongoDB is ready."
+              break
+            fi
+            echo "Waiting for MongoDB..."
+            sleep 2
+          done
+
       - name: Initialize MongoDB users
         run: |
           docker exec mongo_db mongosh -u root -p root --authenticationDatabase admin <<EOF
           use ${{ secrets.MONGO_DATABASE }}
 
-          // Création du root "réel"
           db.getSiblingDB("admin").createUser({
             user: "${{ secrets.MONGO_ROOT_USERNAME }}",
             pwd: "${{ secrets.MONGO_ROOT_PASSWORD }}",
             roles: [ { role: "root", db: "admin" } ]
           })
 
-          // Utilisateur lecteur
           db.createUser({
             user: "${{ secrets.MONGO_USER1 }}",
             pwd: "${{ secrets.MONGO_PASSWORD1 }}",
             roles: [{ role: "read", db: "${{ secrets.MONGO_DATABASE }}" }]
           })
 
-          // Utilisateur manager
           db.createUser({
             user: "${{ secrets.MONGO_USER2 }}",
             pwd: "${{ secrets.MONGO_PASSWORD2 }}",
             roles: [{ role: "readWrite", db: "${{ secrets.MONGO_DATABASE }}" }]
           })EOF
-      # 6️⃣ Lancer le script de migration
 
       - name: Run migration script
         env:
@@ -84,7 +87,6 @@ jobs:
         run: |
           python scripts/migrate_patients.py
 
-      # 7️⃣ Lancer les tests
       - name: Run tests
         run: |
           python -m unittest discover -s scripts -p "test_*.py"
