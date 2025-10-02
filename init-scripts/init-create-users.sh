@@ -3,7 +3,7 @@
 
 # Lecture des variables d'environnement (venant des secrets GitHub)
 # Lecture des variables d'environnement
-MONGO_HOST=${MONGO_HOST:-localhost}
+MONGO_HOST=${MONGO_HOST:-mongo_db}
 MONGO_PORT=${MONGO_PORT:-27017}
 READER_USER=${READER_USER:-readerUser}
 READER_PASS=${READER_PASS:-reader_pass}
