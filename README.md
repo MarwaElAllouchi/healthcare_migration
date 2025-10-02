@@ -1,24 +1,29 @@
-🏥 Healthcare Migration Project
+### 🏥Healthcare Migration Project
 
 Ce projet consiste à migrer des données patients depuis un fichier CSV vers MongoDB, gérer les utilisateurs et rôles MongoDB, et permettre l’export et l’import des données.
 Il s’inscrit dans un contexte de scalabilité Big Data pour aider un client à mieux gérer ses données médicales.
+    
+### 📂Structure du projet
 
-📂 Structure du projet
 healthcare_migration
+├── .github/workflows
+│   └── test_integration.yml          # GitHub Actions workflow
 ├── data/
-│   └── healthcare_dataset.csv       # Fichier source CSV
+│   └── healthcare_dataset.csv        # Fichier source CSV
 ├── scripts/
-│   ├── migrate_patients.py          # Script de migration
-│   ├── test_migration.py            # Tests unitaires
+│   ├── migrate_patients.py           # Script de migration
+│   ├── test_migration.py             # Tests unitaires
 ├── init-scripts/
-│   └── init-create-users.sh         # Création des utilisateurs MongoDB
-├── requirements.txt                 # Dépendances Python
-├── Dockerfile                       # Image migration
-├── docker-compose.yml               # Compose MongoDB + migration
-├── .gitattributes                   # Forcer LF sur les scripts .sh
+│   └── init-create-users.sh          # Création des utilisateurs MongoDB
+├── requirements.txt                  # Dépendances Python
+├── Dockerfile                        # Image migration
+├── docker-compose.yml                # Compose MongoDB + migration
+├── .gitattributes                    # Forcer LF sur les scripts .sh
 └── README.md
 
-🎯 Contexte du projet
+
+
+### 🎯Contexte du projet
 
 Nous avons reçu un dataset médical de patients fourni par un client.
 Leur système actuel ne permettait plus de gérer efficacement la montée en charge (scalabilité).
@@ -33,7 +38,7 @@ Conteneuriser MongoDB et les scripts Python avec Docker.
 
 Automatiser la migration et les tests avec un workflow CI/CD GitHub Actions.
 
-🗂️ Schéma d’architecture
+### 🗂️Schéma d’architecture
          +------------------+
          |  CSV Dataset     |
          | (patients data)  |
@@ -57,7 +62,7 @@ Automatiser la migration et les tests avec un workflow CI/CD GitHub Actions.
 | read/write base |   | read-only access |
 +-----------------+   +------------------+
 
-🗃️ Schéma de la base MongoDB (documents JSON-like)
+### 🗃️Schéma de la base MongoDB (documents JSON-like)
 
 MongoDB stocke les données sous forme de documents JSON-like, c’est-à-dire des paires clé/valeur.
 Chaque document représente un patient et chaque champ correspond à une clé avec sa valeur associée.
@@ -93,7 +98,7 @@ _id : identifiant MongoDB automatique.
 
 MongoDB n’impose pas de schéma strict, mais tous les documents de la collection patients suivent la même structure pour garantir la cohérence.
 
-🐳 Création et gestion des conteneurs
+### 🐳Création et gestion des conteneurs
 Conteneur MongoDB
 
 Basé sur mongo:6.
@@ -120,7 +125,7 @@ docker-compose logs migration
 Nettoyage
 docker-compose down -v
 
-🔐 Rôles utilisateurs MongoDB
+### 🔐Rôles utilisateurs MongoDB
 
 root : accès complet (admin).
 
@@ -149,7 +154,7 @@ EXPORT_PATH=data/exported_patients.csv
 
 Dans GitHub Actions, les valeurs sensibles sont définies comme secrets et injectées via env:.
 
-🚀 Migration des données
+### 🚀Migration des données
 
 Le script migrate_patients.py :
 
@@ -161,7 +166,7 @@ Insère dans MongoDB
 
 Valide types et contraintes
 
-✅ Tests
+### ✅Tests
 
 Le script test_migration.py vérifie :
 
@@ -173,11 +178,11 @@ Pas de doublons
 
 python scripts/test_migration.py
 
-💾 Export des données
+### 💾Export des données
 df = pd.DataFrame(list(collection.find()))
 df.to_csv(EXPORT_PATH, index=False)
 
-🔄 Intégration Continue (CI/CD)
+### 🔄Intégration Continue (CI/CD)
 
 GitHub Actions workflow :
 
@@ -196,7 +201,7 @@ env:
   READUSER_PASS: ${{ secrets.READUSER_PASS }}
   MANAGER_PASS: ${{ secrets.MANAGER_PASS }}
 
-📌 Notes
+### 📌Notes
 
 readuser : lecture seule
 
@@ -206,7 +211,7 @@ Chemins relatifs à la racine
 
 Architecture prête à être étendue vers le cloud
 
-🔗 Références
+### 🔗Références
 
 MongoDB Authentication & Roles
 
