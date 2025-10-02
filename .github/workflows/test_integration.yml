@@ -2,10 +2,10 @@ name: Test Intégrité Projet
 on:
   push:
     branches:
-      - workflow_test
+      - finalCopie
   pull_request:
     branches:
-      - workflow_test
+      - finalCopie
 
 jobs:
   build-and-test:
