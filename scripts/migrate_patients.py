@@ -70,7 +70,7 @@ def connecter_mongodb(retries: int = 20, delay: int = 2) -> pymongo.collection.C
     MONGO_PASS = os.getenv("MONGO_ROOT_PASSWORD", "root")
 
     MONGO_URI = f"mongodb://{MONGO_USER}:{MONGO_PASS}@{MONGO_HOST}:{MONGO_PORT}/{MONGO_DB}?authSource=admin"
-
+    print(f"✅ Connexion  à MongoDB sur {MONGO_URI}")
     for attempt in range(1, retries + 1):
         try:
             client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
