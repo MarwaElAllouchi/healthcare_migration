@@ -101,7 +101,7 @@ jobs:
           MONGO_PORT: ${{ secrets.MONGO_PORT }}
           MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
           MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
-          MONGO_COLLECTION : ${{ secrets.MONGO_COLLECTION }}
+          MONGO_COLLECTION: ${{ secrets.MONGO_COLLECTION }}
           MONGO_DB: ${{ secrets.MONGO_DATABASE }}
 
         run: |
