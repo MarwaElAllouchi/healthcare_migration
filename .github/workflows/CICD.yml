@@ -92,20 +92,17 @@ jobs:
           done
 
       - name: Run migration
+        env:
+          MONGO_HOST: mongo_db
+          MONGO_PORT: 27017
+          MONGO_DB: healthcareDB
+          MONGO_ROOT_USERNAME: root
+          MONGO_ROOT_PASSWORD: root
+          MONGO_COLLECTION: patients
+          CSV_PATH: data/healthcare_dataset.csv
+          EXPORT_PATH: data/exported_patients.csv
         run: |
-          docker run --rm \
-            --link mongo_db:mongo_db \
-            -v ${{ github.workspace }}:/app \
-            -w /app \
-            -e MONGO_HOST=mongo_db \
-            -e MONGO_PORT=27017 \
-            -e MONGO_DB=$MONGO_DB \
-            -e MONGO_ROOT_USERNAME=$MONGO_ROOT_USERNAME \
-            -e MONGO_ROOT_PASSWORD=$MONGO_ROOT_PASSWORD \
-            -e MONGO_COLLECTION=$MONGO_COLLECTION \
-            -e CSV_PATH=/app/data/healthcare_dataset.csv \
-            -e EXPORT_PATH=/app/data/exported_patients.csv \
-            python:3.13 bash -c "pip install -r requirements.txt && bash ./.init/entrypoint.sh migrate"
+          bash ./.init/entrypoint.sh migrate
 
       - name: Run Pytest
         env:
