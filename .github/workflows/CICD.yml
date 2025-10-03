@@ -48,61 +48,46 @@ jobs:
           mkdir -p data
           kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip
 
-      - name: Start MongoDB container
-        run: |
-          mkdir -p ./mongo-init
-          cat <<EOF > ./mongo-init/init-create-users.sh
-          use $MONGO_DB;
-
-          db.getSiblingDB("admin").createUser({
-              user: "$MONGO_ROOT_USERNAME",
-              pwd: "$MONGO_ROOT_PASSWORD",
-              roles: [{ role: "root", db: "admin" }]
-          });
-
-          db.createUser({
-              user: "$MONGO_USER1",
-              pwd: "$MONGO_PASSWORD1",
-              roles: [{ role: "read", db: "$MONGO_DB" }]
-          });
-
-          db.createUser({
-              user: "$MONGO_USER2",
-              pwd: "$MONGO_PASSWORD2",
-              roles: [{ role: "readWrite", db: "$MONGO_DB" }]
-          });
-          EOF
-
-          docker run -d --name mongo_db \
-            -v ${{ github.workspace }}/mongo-init:/docker-entrypoint-initdb.d \
-            -e MONGO_INITDB_ROOT_USERNAME=$MONGO_ROOT_USERNAME \
-            -e MONGO_INITDB_ROOT_PASSWORD=$MONGO_ROOT_PASSWORD \
-            -p 27017:27017 \
-            mongo:7.0
-
       - name: Wait for MongoDB
         run: |
           for i in {1..30}; do
-            if mongosh --host mongo_db -u $MONGO_ROOT_USERNAME -p $MONGO_ROOT_PASSWORD --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
-              echo "MongoDB is ready"
+            if mongosh --host localhost -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
+              echo "MongoDB is ready."
               break
             fi
             echo "Waiting for MongoDB..."
             sleep 2
           done
 
-      - name: Run migration
-        env:
-          MONGO_HOST: mongo_db
-          MONGO_PORT: 27017
-          MONGO_DB: healthcareDB
-          MONGO_ROOT_USERNAME: root
-          MONGO_ROOT_PASSWORD: root
-          MONGO_COLLECTION: patients
-          CSV_PATH: data/healthcare_dataset.csv
-          EXPORT_PATH: data/exported_patients.csv
+      - name: Initialize MongoDB users
         run: |
-          bash ./.init/entrypoint.sh migrate
+          mongosh --host localhost -u root -p root --authenticationDatabase admin <<EOF
+            use healthcareDB
+            db.createUser({
+              user: "user_reader",
+              pwd: "reader_pass",
+              roles: [{ role: "read", db: "healthcareDB" }]
+            })
+            db.createUser({
+              user: "user_manager",
+              pwd: "manager_pass",
+              roles: [{ role: "readWrite", db: "healthcareDB" }]
+            })
+          EOF
+
+      - name: Run migration in Docker container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/app \
+            -w /app \
+            -e MONGO_HOST=mongo_db \
+            -e MONGO_PORT=27017 \
+            -e MONGO_DB=$MONGO_DB \
+            -e MONGO_ROOT_USERNAME=$MONGO_ROOT_USERNAME \
+            -e MONGO_ROOT_PASSWORD=$MONGO_ROOT_PASSWORD \
+            -e MONGO_COLLECTION=$MONGO_COLLECTION \
+            -e CSV_PATH=/app/data/healthcare_dataset.csv \
+            python:3.13 bash -c "pip install -r requirements.txt && bash ./.init/entrypoint.sh migrate"
 
       - name: Run Pytest
         env:
