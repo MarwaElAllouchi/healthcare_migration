@@ -105,7 +105,7 @@ jobs:
             -e MONGO_COLLECTION=$MONGO_COLLECTION \
             -e CSV_PATH=/app/data/healthcare_dataset.csv \
             -e EXPORT_PATH=/app/data/exported_patients.csv \
-            python:3.13 bash -c "pip install -r requirements.txt && bash ./.init/entrypoint.sh migrate
+            python:3.13 bash -c "pip install -r requirements.txt && bash ./.init/entrypoint.sh migrate"
 
       - name: Run Pytest
         run: |
