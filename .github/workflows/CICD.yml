@@ -79,7 +79,7 @@ jobs:
       # 7️⃣ Créer les utilisateurs
       - name: Initialize MongoDB users
         run: |
-          mongosh --host localhost:27017 -u root -p root --authenticationDatabase admin <<EOF
+          mongosh --host mongo_db:27017 -u root -p root --authenticationDatabase admin <<EOF
             use ${{ secrets.MONGO_DATABASE }}
             
             // Root réel
