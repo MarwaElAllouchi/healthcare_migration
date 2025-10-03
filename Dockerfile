@@ -12,6 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copier les scripts dans /app/scripts
 COPY scripts/ scripts/
 COPY data/ data/
+COPY tests/ tests/
+COPY .init/ .init/
 
-# Définir le point d'entrée : migration puis tests
-CMD ["bash", "-c", "python scripts/migrate_patients.py && python scripts/test_migration.py"]
+RUN chmod +x ./.init/entrypoint.sh
+# Par défaut, on fait tout (migration + tests)
+ENV PYTHONPATH=/app/scripts:$PYTHONPATH
+CMD ["bash", "./.init/entrypoint.sh", "all"]

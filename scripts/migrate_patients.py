@@ -100,7 +100,7 @@ def exporter_collection_csv(collection: pymongo.collection.Collection, export_pa
 
 def main():
     CSV_PATH = os.environ.get("CSV_PATH", "../data/healthcare_dataset.csv")
-    EXPORT_PATH = os.environ.get("EXPORT_PATH", "data/export_patients.csv")
+    EXPORT_PATH = os.environ.get("EXPORT_PATH", "../data/exported_patients.csv")
 
     df = charger_csv(CSV_PATH)
     records = transformer_records(df)

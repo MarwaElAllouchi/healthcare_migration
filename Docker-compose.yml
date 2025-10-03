@@ -39,6 +39,7 @@ services:
       MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     volumes:
       - .:/app
+    command: ["bash", "./.init/entrypoint.sh", "all"]  # par défaut: migration + tests
 networks:
   my_netwrok:
     name: healthcare_migration_network
