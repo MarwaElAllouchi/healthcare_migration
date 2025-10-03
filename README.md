@@ -25,6 +25,7 @@ healthcare_migration
 ├── docker-compose.yml                       # Compose MongoDB + migration
 ├── .gitattributes                           # Forcer LF sur les scripts .sh
 └── README.md
+└──schema_patients.md
 
 ### 🎯 Contexte du projet
 

@@ -103,7 +103,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/app \
             -w /app \
-            -e MONGO_HOST=mongo_db \
+            -e MONGO_HOST=localhost \
             -e MONGO_PORT=27017 \
             -e MONGO_DB=healthcareDB \
             -e MONGO_ROOT_USERNAME=root \
@@ -116,7 +116,7 @@ jobs:
       # 9️⃣ Run tests
       - name: Run Pytest
         env:
-          MONGO_HOST: mongo_db
+          MONGO_HOST: localhost
           MONGO_PORT: 27017
           MONGO_ROOT_USERNAME: root
           MONGO_ROOT_PASSWORD: root
