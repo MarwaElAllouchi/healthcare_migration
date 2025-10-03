@@ -83,7 +83,7 @@ jobs:
       - name: Wait for MongoDB
         run: |
           for i in {1..30}; do
-            if mongosh --host localhost -u $MONGO_ROOT_USERNAME -p $MONGO_ROOT_PASSWORD --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
+            if mongosh --host mongo_db -u $MONGO_ROOT_USERNAME -p $MONGO_ROOT_PASSWORD --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
               echo "MongoDB is ready"
               break
             fi
