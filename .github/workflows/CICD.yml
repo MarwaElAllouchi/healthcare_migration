@@ -65,11 +65,11 @@ jobs:
           mkdir -p data
           kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip
 
-      # 6️⃣ Wait for MongoDB to be ready
+      # 5️⃣ Attendre que MongoDB soit prêt
       - name: Wait for MongoDB
         run: |
           for i in {1..30}; do
-            if mongosh --host mongo_db -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
+            if mongosh --host localhost -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
               echo "MongoDB is ready."
               break
             fi
@@ -77,25 +77,26 @@ jobs:
             sleep 2
           done
 
-      # 7️⃣ Create MongoDB users
+      # 6️⃣ Créer les utilisateurs
       - name: Initialize MongoDB users
         run: |
-          mongosh --host mongo_db -u root -p root --authenticationDatabase admin <<EOF
+          mongosh --host localhost -u root -p root --authenticationDatabase admin <<EOF
             use healthcareDB
-            
+
+            // Utilisateur lecteur
             db.createUser({
               user: "readuser",
               pwd: "readpass",
               roles: [{ role: "read", db: "healthcareDB" }]
             })
 
+            // Utilisateur manager
             db.createUser({
               user: "manageruser",
               pwd: "managerpass",
               roles: [{ role: "readWrite", db: "healthcareDB" }]
             })
           EOF
-
       # 8️⃣ Run migration
       - name: Run migration
         run: |
