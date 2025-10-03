@@ -15,6 +15,7 @@ jobs:
     services:
       mongo_db:
         image: mongo:7.0
+        ports: []
         env:
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: root
@@ -23,7 +24,7 @@ jobs:
       PYTHONPATH: ${{ github.workspace }}
 
     steps:
-      # 1️⃣ Checkout du dépôt
+      # 1️⃣ Checkout
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -33,29 +34,31 @@ jobs:
         with:
           python-version: '3.13'
 
-      # 3️⃣ Installer dépendances Python globales
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest kaggle pymongo pandas
+          pip install pytest kaggle pymongo
 
-      # 4️⃣ Installer mongosh
-      - name: Install mongosh
+      # 4️⃣ Setup Kaggle API
+      - name: Setup Kaggle API
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gnupg wget
-          wget -qO- https://www.mongodb.org/static/pgp/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-7.0.asc
-          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-          sudo apt-get update
-          sudo apt-get install -y mongodb-mongosh
-          mongosh --version
+          mkdir -p ~/.kaggle
+          echo "{\"username\":\"${{ secrets.KAGGLE_USERNAME }}\",\"key\":\"${{ secrets.KAGGLE_KEY }}\"}" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
 
-      # 5️⃣ Attendre que MongoDB soit prêt
+      # 5️⃣ Download dataset
+      - name: Download CSV dataset
+        run: |
+          mkdir -p data
+          kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip
+
+      # 6️⃣ Wait for MongoDB to be ready
       - name: Wait for MongoDB
         run: |
           for i in {1..30}; do
-            if mongosh --host localhost -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
+            if mongosh --host mongo_db -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
               echo "MongoDB is ready."
               break
             fi
@@ -63,20 +66,18 @@ jobs:
             sleep 2
           done
 
-      # 6️⃣ Créer les utilisateurs
+      # 7️⃣ Create MongoDB users
       - name: Initialize MongoDB users
         run: |
-          mongosh --host localhost -u root -p root --authenticationDatabase admin <<EOF
+          mongosh --host mongo_db -u root -p root --authenticationDatabase admin <<EOF
             use healthcareDB
-
-            // Utilisateur lecteur
+            
             db.createUser({
               user: "readuser",
               pwd: "readpass",
               roles: [{ role: "read", db: "healthcareDB" }]
             })
 
-            // Utilisateur manager
             db.createUser({
               user: "manageruser",
               pwd: "managerpass",
@@ -84,25 +85,13 @@ jobs:
             })
           EOF
 
-      # 7️⃣ Télécharger dataset Kaggle
-      - name: Setup Kaggle API
-        run: |
-          mkdir -p ~/.kaggle
-          echo "{\"username\":\"${{ secrets.KAGGLE_USERNAME }}\",\"key\":\"${{ secrets.KAGGLE_KEY }}\"}" > ~/.kaggle/kaggle.json
-          chmod 600 ~/.kaggle/kaggle.json
-
-      - name: Download CSV dataset
-        run: |
-          mkdir -p data
-          kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip
-
-      # 8️⃣ Migration des données
+      # 8️⃣ Run migration
       - name: Run migration
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/app \
             -w /app \
-            -e MONGO_HOST=localhost \
+            -e MONGO_HOST=mongo_db \
             -e MONGO_PORT=27017 \
             -e MONGO_DB=healthcareDB \
             -e MONGO_ROOT_USERNAME=root \
@@ -110,12 +99,12 @@ jobs:
             -e MONGO_COLLECTION=patients \
             -e CSV_PATH=/app/data/healthcare_dataset.csv \
             -e EXPORT_PATH=/app/data/exported_patients.csv \
-            python:3.13 bash -c "pip install --no-cache-dir -r requirements.txt && bash ./.init/entrypoint.sh migrate"
+            python:3.13 bash -c "pip install -r requirements.txt && bash ./.init/entrypoint.sh migrate"
 
-      # 9️⃣ Tests unitaires et d’intégration
+      # 9️⃣ Run tests
       - name: Run Pytest
         env:
-          MONGO_HOST: localhost
+          MONGO_HOST: mongo_db
           MONGO_PORT: 27017
           MONGO_ROOT_USERNAME: root
           MONGO_ROOT_PASSWORD: root
