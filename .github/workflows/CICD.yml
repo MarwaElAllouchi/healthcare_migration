@@ -61,7 +61,7 @@ jobs:
       - name: Wait for MongoDB
         run: |
           for i in {1..30}; do
-            if mongosh --host localhost -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
+            if mongosh --host localhost:27017 -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
               echo "MongoDB is ready."
               break
             fi
@@ -69,19 +69,31 @@ jobs:
             sleep 2
           done
 
+    
       - name: Initialize MongoDB users
         run: |
-          mongosh --host localhost -u root -p root --authenticationDatabase admin <<EOF
-            use healthcareDB
-            db.createUser({
-              user: "user_reader",
-              pwd: "reader_pass",
-              roles: [{ role: "read", db: "healthcareDB" }]
+          mongosh --host localhost:27017 -u root -p root --authenticationDatabase admin <<EOF
+            use ${{ secrets.MONGO_DATABASE }}
+            
+            // Root réel
+            db.getSiblingDB("admin").createUser({
+              user: "${{ secrets.MONGO_ROOT_USERNAME }}",
+              pwd: "${{ secrets.MONGO_ROOT_PASSWORD }}",
+              roles: [{ role: "root", db: "admin" }]
             })
+
+            // Utilisateur lecteur
             db.createUser({
-              user: "user_manager",
-              pwd: "manager_pass",
-              roles: [{ role: "readWrite", db: "healthcareDB" }]
+              user: "${{ secrets.MONGO_USER1 }}",
+              pwd: "${{ secrets.MONGO_PASSWORD1 }}",
+              roles: [{ role: "read", db: "${{ secrets.MONGO_DATABASE }}" }]
+            })
+
+            // Utilisateur manager
+            db.createUser({
+              user: "${{ secrets.MONGO_USER2 }}",
+              pwd: "${{ secrets.MONGO_PASSWORD2 }}",
+              roles: [{ role: "readWrite", db: "${{ secrets.MONGO_DATABASE }}" }]
             })
           EOF
 
