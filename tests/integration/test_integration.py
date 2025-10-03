@@ -15,8 +15,12 @@ def records():
 def mongo_collection_with_data(records):
     """Connexion à MongoDB sur une base de test, insertion des records, nettoyage avant et après tests"""
     # Utiliser une DB et collection de test
+    os.environ["MONGO_HOST"] = "mongo_db"
+    os.environ["MONGO_PORT"] = "27017"
     os.environ["MONGO_DB"] = "healthcareDB_test"
     os.environ["MONGO_COLLECTION"] = "patients_test"
+    os.environ["MONGO_ROOT_USERNAME"] = "root"
+    os.environ["MONGO_ROOT_PASSWORD"] = "root"
 
     collection = connecter_mongodb()
     collection.delete_many({})       # nettoyage avant test
