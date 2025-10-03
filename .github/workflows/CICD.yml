@@ -1,4 +1,4 @@
-name: CI/CD Healthcare Migration
+name: Test CI/CD
 
 on:
   push:
@@ -11,121 +11,117 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
     services:
       mongo_db:
         image: mongo:7.0
-        ports:
-          - 27017:27017
-     
         env:
-          PYTHONPATH: ${{ github.workspace }}
-          MONGO_DB: ${{ secrets.MONGO_DATABASE }}
-          MONGO_ROOT_USERNAME: root
-          MONGO_ROOT_PASSWORD: root
-          MONGO_USER1: ${{ secrets.MONGO_USER1 }}
-          MONGO_PASSWORD1: ${{ secrets.MONGO_PASSWORD1 }}
-          MONGO_USER2: ${{ secrets.MONGO_USER2 }}
-          MONGO_PASSWORD2: ${{ secrets.MONGO_PASSWORD2 }}
-          MONGO_COLLECTION: patients
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: root
+
+    env:
+      PYTHONPATH: ${{ github.workspace }}
 
     steps:
-          - name: Checkout repository
-            uses: actions/checkout@v3
+      # 1️⃣ Checkout du dépôt
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-          - name: Setup Python
-            uses: actions/setup-python@v4
-            with:
-              python-version: '3.13'
+      # 2️⃣ Setup Python
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
 
-          - name: Install dependencies
-            run: |
-              pip install --upgrade pip
-              pip install -r requirements.txt
-              pip install pytest kaggle pymongo
-              
-          - name: Install mongosh
-            run: |
-              sudo apt-get update
-              sudo apt-get install -y gnupg wget
-              wget -qO- https://www.mongodb.org/static/pgp/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-7.0.asc
-              echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-              sudo apt-get update
-              sudo apt-get install -y mongodb-mongosh
-              mongosh --version
+      # 3️⃣ Installer dépendances Python globales
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest kaggle pymongo pandas
 
-          - name: Setup Kaggle API
-            run: |
-              mkdir -p ~/.kaggle
-              echo "{\"username\":\"${{ secrets.KAGGLE_USERNAME }}\",\"key\":\"${{ secrets.KAGGLE_KEY }}\"}" > ~/.kaggle/kaggle.json
-              chmod 600 ~/.kaggle/kaggle.json
+      # 4️⃣ Installer mongosh
+      - name: Install mongosh
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnupg wget
+          wget -qO- https://www.mongodb.org/static/pgp/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-7.0.asc
+          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+          sudo apt-get update
+          sudo apt-get install -y mongodb-mongosh
+          mongosh --version
 
-          - name: Download CSV dataset
-            run: |
-              mkdir -p data
-              kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip
+      # 5️⃣ Attendre que MongoDB soit prêt
+      - name: Wait for MongoDB
+        run: |
+          for i in {1..30}; do
+            if mongosh --host localhost -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
+              echo "MongoDB is ready."
+              break
+            fi
+            echo "Waiting for MongoDB..."
+            sleep 2
+          done
 
-          - name: Wait for MongoDB
-            run: |
-              for i in {1..30}; do
-                if mongosh --host localhost:27017 -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
-                  echo "MongoDB is ready."
-                  break
-                fi
-                echo "Waiting for MongoDB..."
-                sleep 2
-              done
+      # 6️⃣ Créer les utilisateurs
+      - name: Initialize MongoDB users
+        run: |
+          mongosh --host localhost -u root -p root --authenticationDatabase admin <<EOF
+            use healthcareDB
 
-        
-          - name: Initialize MongoDB users
-            run: |
-              mongosh --host localhost:27017 -u root -p root --authenticationDatabase admin <<EOF
-                use ${{ secrets.MONGO_DATABASE }}
-                
-                // Root réel
-                db.getSiblingDB("admin").createUser({
-                  user: "${{ secrets.MONGO_ROOT_USERNAME }}",
-                  pwd: "${{ secrets.MONGO_ROOT_PASSWORD }}",
-                  roles: [{ role: "root", db: "admin" }]
-                })
+            // Utilisateur lecteur
+            db.createUser({
+              user: "readuser",
+              pwd: "readpass",
+              roles: [{ role: "read", db: "healthcareDB" }]
+            })
 
-                // Utilisateur lecteur
-                db.createUser({
-                  user: "${{ secrets.MONGO_USER1 }}",
-                  pwd: "${{ secrets.MONGO_PASSWORD1 }}",
-                  roles: [{ role: "read", db: "${{ secrets.MONGO_DATABASE }}" }]
-                })
+            // Utilisateur manager
+            db.createUser({
+              user: "manageruser",
+              pwd: "managerpass",
+              roles: [{ role: "readWrite", db: "healthcareDB" }]
+            })
+          EOF
 
-                // Utilisateur manager
-                db.createUser({
-                  user: "${{ secrets.MONGO_USER2 }}",
-                  pwd: "${{ secrets.MONGO_PASSWORD2 }}",
-                  roles: [{ role: "readWrite", db: "${{ secrets.MONGO_DATABASE }}" }]
-                })
-              EOF
+      # 7️⃣ Télécharger dataset Kaggle
+      - name: Setup Kaggle API
+        run: |
+          mkdir -p ~/.kaggle
+          echo "{\"username\":\"${{ secrets.KAGGLE_USERNAME }}\",\"key\":\"${{ secrets.KAGGLE_KEY }}\"}" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
 
-          - name: Run migration in Docker container
-            run: |
-              docker run --rm \
-                -v ${{ github.workspace }}:/app \
-                -w /app \
-                -e MONGO_HOST=mongo_db \
-                -e MONGO_PORT=27017 \
-                -e MONGO_DB=$MONGO_DB \
-                -e MONGO_ROOT_USERNAME=$MONGO_ROOT_USERNAME \
-                -e MONGO_ROOT_PASSWORD=$MONGO_ROOT_PASSWORD \
-                -e MONGO_COLLECTION=$MONGO_COLLECTION \
-                -e CSV_PATH=/app/data/healthcare_dataset.csv \
-                python:3.13 bash -c "pip install -r requirements.txt && bash ./.init/entrypoint.sh migrate"
+      - name: Download CSV dataset
+        run: |
+          mkdir -p data
+          kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip
 
-          - name: Run Pytest
-            env:
-              MONGO_HOST: mongo_db
-              MONGO_PORT: 27017
-              MONGO_ROOT_USERNAME: root
-              MONGO_ROOT_PASSWORD: root
-              MONGO_DB: healthcareDB_test
-              MONGO_COLLECTION: patients_test
-              CSV_PATH: tests/data_test/healthcare_dataset_test.csv
-            run: |
-              pytest -v tests/unit
-              pytest -v tests/integration
+      # 8️⃣ Migration des données
+      - name: Run migration
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/app \
+            -w /app \
+            -e MONGO_HOST=localhost \
+            -e MONGO_PORT=27017 \
+            -e MONGO_DB=healthcareDB \
+            -e MONGO_ROOT_USERNAME=root \
+            -e MONGO_ROOT_PASSWORD=root \
+            -e MONGO_COLLECTION=patients \
+            -e CSV_PATH=/app/data/healthcare_dataset.csv \
+            -e EXPORT_PATH=/app/data/exported_patients.csv \
+            python:3.13 bash -c "pip install --no-cache-dir -r requirements.txt && bash ./.init/entrypoint.sh migrate"
+
+      # 9️⃣ Tests unitaires et d’intégration
+      - name: Run Pytest
+        env:
+          MONGO_HOST: localhost
+          MONGO_PORT: 27017
+          MONGO_ROOT_USERNAME: root
+          MONGO_ROOT_PASSWORD: root
+          MONGO_DB: healthcareDB_test
+          MONGO_COLLECTION: patients_test
+          CSV_PATH: tests/data_test/healthcare_dataset_test.csv
+        run: |
+          pytest -v tests/unit
+          pytest -v tests/integration
