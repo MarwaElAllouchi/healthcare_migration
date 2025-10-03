@@ -7,7 +7,7 @@ from scripts.migrate_patients import charger_csv, transformer_records, inserer_r
 @pytest.fixture(scope="module")
 def records():
     """Prépare les records depuis le CSV factice pour les tests"""
-    CSV_PATH = os.environ.get("CSV_PATH", "tests/data_test/healthcare_dataset_test.csv")
+    CSV_PATH = "tests/data_test/healthcare_dataset_test.csv"
     df = charger_csv(CSV_PATH)
     return transformer_records(df)
 
