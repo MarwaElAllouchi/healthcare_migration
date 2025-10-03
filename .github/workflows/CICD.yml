@@ -114,7 +114,7 @@ jobs:
           CSV_PATH: data/healthcare_dataset.csv
           EXPORT_PATH: data/exported_patients.csv
         run: |
-          bash ./.init/entrypoint.sh all
+          bash ./.init/entrypoint.sh migrate
 
       # 9️⃣ Vérifier les tests unitaires et intégration avec pytest
       - name: Run Pytest
