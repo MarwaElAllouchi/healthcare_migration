@@ -15,8 +15,7 @@ jobs:
     services:
       mongo_db:
         image: mongo:7.0
-        ports:
-          - 27017:27017
+  
         env:
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: root
@@ -64,11 +63,11 @@ jobs:
           sudo apt-get install -y mongodb-mongosh
           mongosh --version
 
-      # 7️⃣ Attendre que MongoDB soit prêt
+      # 6️⃣ Attendre que MongoDB soit prêt
       - name: Wait for MongoDB
         run: |
           for i in {1..30}; do
-            if mongosh --host mongo_db:27017 -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
+            if mongosh --host mongo_db -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
               echo "MongoDB is ready."
               break
             fi
@@ -76,31 +75,25 @@ jobs:
             sleep 2
           done
 
-      # 7️⃣ Créer les utilisateurs
+      # 7️⃣ Initialiser les utilisateurs MongoDB
       - name: Initialize MongoDB users
         run: |
-          mongosh --host mongo_db:27017 -u root -p root --authenticationDatabase admin <<EOF
-            use ${{ secrets.MONGO_DATABASE }}
-            
-            // Root réel
-            db.getSiblingDB("admin").createUser({
-              user: "${{ secrets.MONGO_ROOT_USERNAME }}",
-              pwd: "${{ secrets.MONGO_ROOT_PASSWORD }}",
+          mongosh --host mongo_db -u root -p root --authenticationDatabase admin <<EOF
+            use healthcareDB
+            db.createUser({
+              user: "root",
+              pwd: "root",
               roles: [{ role: "root", db: "admin" }]
             })
-
-            // Utilisateur lecteur
             db.createUser({
-              user: "${{ secrets.MONGO_USER1 }}",
-              pwd: "${{ secrets.MONGO_PASSWORD1 }}",
-              roles: [{ role: "read", db: "${{ secrets.MONGO_DATABASE }}" }]
+              user: "readuser",
+              pwd: "readerPass",
+              roles: [{ role: "read", db: "healthcareDB" }]
             })
-
-            // Utilisateur manager
             db.createUser({
-              user: "${{ secrets.MONGO_USER2 }}",
-              pwd: "${{ secrets.MONGO_PASSWORD2 }}",
-              roles: [{ role: "readWrite", db: "${{ secrets.MONGO_DATABASE }}" }]
+              user: "manager",
+              pwd: "managerPass",
+              roles: [{ role: "readWrite", db: "healthcareDB" }]
             })
           EOF
       # 8️⃣ Lancer le conteneur migration pour exécuter migrate + tests
