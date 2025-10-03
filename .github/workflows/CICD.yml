@@ -1,12 +1,12 @@
-name: Test Intégrité Projet
+name: Test CI/CD
 
 on:
   push:
     branches:
-      - versionfinal
+      - finalCopie
   pull_request:
     branches:
-      - versionfinal
+      - finalCopie
 
 jobs:
   build-and-test:
@@ -22,7 +22,7 @@ jobs:
           MONGO_INITDB_ROOT_PASSWORD: root
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1️⃣ Checkout du dépôt
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -32,20 +32,27 @@ jobs:
         with:
           python-version: '3.13'
 
-      # 3️⃣ Installer les dépendances
+      # 3️⃣ Installer dépendances Python
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest kaggle
 
-      # 4️⃣ Télécharger le dataset public depuis Kaggle
+      # 4️⃣ Configurer l'API Kaggle
+      - name: Setup Kaggle API
+        run: |
+          mkdir -p ~/.kaggle
+          echo "{\"username\":\"${{ secrets.KAGGLE_USERNAME }}\",\"key\":\"${{ secrets.KAGGLE_KEY }}\"}" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
+      # 5️⃣ Télécharger le dataset CSV depuis Kaggle
       - name: Download CSV dataset
         run: |
           mkdir -p data
           kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip
 
-      # 5️⃣ Attendre que MongoDB soit prêt
+      # 6️⃣ Attendre que MongoDB soit prêt
       - name: Wait for MongoDB
         run: |
           for i in {1..30}; do
@@ -57,7 +64,7 @@ jobs:
             sleep 2
           done
 
-      # 6️⃣ Initialiser la DB et les utilisateurs (root, manager, readuser)
+      # 7️⃣ Initialiser la DB et les utilisateurs
       - name: Initialize MongoDB users
         run: |
           mongosh --host localhost:27017 -u root -p root --authenticationDatabase admin <<EOF
@@ -67,7 +74,7 @@ jobs:
             db.createUser({ user: "manager", pwd: "managerPass", roles: [{ role: "readWrite", db: "healthcareDB" }] })
           EOF
 
-      # 7️⃣ Exécuter le conteneur migration + tests
+      # 8️⃣ Lancer le conteneur migration pour exécuter migrate + tests
       - name: Run migration and tests
         env:
           MONGO_HOST: localhost
@@ -80,3 +87,9 @@ jobs:
           EXPORT_PATH: data/exported_patients.csv
         run: |
           bash ./.init/entrypoint.sh all
+
+      # 9️⃣ Vérifier les tests unitaires et intégration avec pytest
+      - name: Run Pytest
+        run: |
+          pytest -v tests/unit
+          pytest -v tests/integration
