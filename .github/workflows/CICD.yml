@@ -3,10 +3,10 @@ name: Test CI/CD
 on:
   push:
     branches:
-      - final
+      - main
   pull_request:
     branches:
-      - final
+      - main
 
 jobs:
   build-and-test:
