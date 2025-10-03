@@ -20,7 +20,8 @@ jobs:
         env:
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: root
-
+    env:
+      PYTHONPATH: ${{ github.workspace }}  # Pour que "scripts" soit trouvé
     steps:
       # 1️⃣ Checkout du dépôt
       - name: Checkout repository
@@ -119,5 +120,6 @@ jobs:
       # 9️⃣ Vérifier les tests unitaires et intégration avec pytest
       - name: Run Pytest
         run: |
+        
           pytest -v tests/unit
           pytest -v tests/integration
