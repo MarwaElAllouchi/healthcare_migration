@@ -6,8 +6,7 @@ services:
       - my_netwrok
     ports:
       - "27017:27017"
-    env_file:
-      - .env  # assure-toi que ce fichier existe et contient toutes les variables
+      
     environment:
       # Variables root
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
