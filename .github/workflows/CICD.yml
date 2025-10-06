@@ -80,8 +80,6 @@ jobs:
       # 6️⃣ Créer les utilisateurs
       - name: Initialize MongoDB users
         run: |
-                - name: Initialize MongoDB users
-        run: |
           mongosh --host localhost -u root -p root --authenticationDatabase admin <<EOF
           use healthcareDB;
 
