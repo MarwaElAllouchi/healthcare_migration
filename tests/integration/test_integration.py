@@ -44,3 +44,4 @@ def test_no_duplicates(mongo_collection_with_data):
     docs = list(mongo_collection_with_data.find({}, {"_id": 0}))
     seen = [tuple(sorted(d.items())) for d in docs]
     assert len(seen) == len(set(seen))
+    

@@ -19,11 +19,13 @@ case "$1" in
     ;;
     
   all)
-    echo "🚀 Migration réelle..."
-    python scripts/migrate_patients.py
+    
     
     echo "🧪 Tests unitaires..."
     python -m unittest discover -s tests/unit
+
+    echo "🚀 Migration réelle..."
+    python scripts/migrate_patients.py
     
     echo "🔗 Tests d'intégration avec données factices..."
     export MONGO_DB=healthcareDB_test

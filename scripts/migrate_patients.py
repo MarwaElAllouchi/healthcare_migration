@@ -100,8 +100,9 @@ def exporter_collection_csv(collection: pymongo.collection.Collection, export_pa
 def crud_examples(collection: pymongo.collection.Collection): 
     print(f"collection name '{collection.name}'")
     # --- CREATE ---
+    collection.delete_many({})
     print(f"=================Crud Exempels===================")
-
+    
     patient = {
         "Name":"Test Test",
         "Age": 45,
