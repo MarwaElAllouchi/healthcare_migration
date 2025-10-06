@@ -88,14 +88,14 @@ jobs:
               user: "${{ secrets.MONGO_USER1 }}",
               pwd: "${{ secrets.MONGO_PASSWORD1 }}",
               roles: [{ role: "read", db: "healthcareDB" }]
-            })
+            });
 
             // Utilisateur manager
             db.createUser({
               user: "${{ secrets.MONGO_USER2 }}",
               pwd: "${{ secrets.MONGO_PASSWORD2 }}",
               roles: [{ role: "readWrite", db: "healthcareDB" }]
-            })
+            });
             EOF
       # 8️⃣ Run migration
       - name: Run migration
@@ -111,7 +111,7 @@ jobs:
             -e MONGO_COLLECTION=patients \
             -e CSV_PATH=/app/data/healthcare_dataset.csv \
             -e EXPORT_PATH=/app/data/exported_patients.csv \
-            python:3.13 bash -c "pip install -r requirements.txt && bash ./.init/entrypoint.sh migrate"
+             bash ./.init/entrypoint.sh migrate"
 
       # 9️⃣ Run tests
       - name: Run Pytest
