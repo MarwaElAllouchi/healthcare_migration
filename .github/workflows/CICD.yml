@@ -80,30 +80,30 @@ jobs:
       # 6️⃣ Créer les utilisateurs
       - name: Initialize MongoDB users
         run: |
+          run: |
           mongosh --host localhost -u root -p root --authenticationDatabase admin <<EOF
             use healthcareDB
 
             // Utilisateur lecteur
             db.createUser({
-              user:${{ secrets.MONGO_USER1}},
-              pwd:${{ secrets.MONGO_PASSWORD1}},
+              user: "${{ secrets.MONGO_USER1 }}",
+              pwd: "${{ secrets.MONGO_PASSWORD1 }}",
               roles: [{ role: "read", db: "healthcareDB" }]
             })
 
             // Utilisateur manager
             db.createUser({
-              user: ${{ secrets.MONGO_USER2}},
-              pwd: ${{ secrets.MONGO_PASSWORD2}},
+              user: "${{ secrets.MONGO_USER2 }}",
+              pwd: "${{ secrets.MONGO_PASSWORD2 }}",
               roles: [{ role: "readWrite", db: "healthcareDB" }]
-            })
-          EOF
+            })EOF
       # 8️⃣ Run migration
       - name: Run migration
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/app \
             -w /app \
-            -e MONGO_HOST=localhost \
+            -e MONGO_HOST=mongo_db \
             -e MONGO_PORT=27017 \
             -e MONGO_DB=healthcareDB \
             -e MONGO_ROOT_USERNAME=root \
