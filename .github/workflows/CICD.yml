@@ -1,14 +1,15 @@
-name: CICD
+name: Test CI/CD
 
 on:
-push:
-branches: [ main ]
-pull_request:
-workflow_dispatch:
-
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 jobs:
-test:
-runs-on: ubuntu-latest
+ test:
+  runs-on: ubuntu-latest
 
 steps:
   - name: Checkout repository
