@@ -23,12 +23,17 @@ services:
     volumes:
       - mongo_data:/data/db       # volume persistant
       - ./init-scripts:/docker-entrypoint-initdb.d  # scripts init
- 
+    healthcheck:
+    test: ["CMD", "mongo", "--username", "${MONGO_ROOT_USERNAME}", "--password", "${MONGO_ROOT_PASSWORD}", "--eval", "db.adminCommand('ping')"]
+    interval: 2s
+    timeout: 5s
+    retries: 10
   migration:
     build: .
     container_name: healthcare_migration-migration
     depends_on:
-      - mongo_db
+      mongo_db:
+       condition: service_healthy
     networks:
       - my_netwrok
     environment:
