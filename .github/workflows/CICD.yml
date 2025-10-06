@@ -95,6 +95,10 @@ jobs:
             roles: [{ role: "readWrite", db: "healthcareDB" }]
           });
           EOF
+      # 8️⃣ Make entrypoint executable
+      - name: Make entrypoint executable
+        run: chmod +x ./.init/entrypoint.sh
+        shell: bash
 
       # 8️⃣ Run migration
       - name: Run migration
