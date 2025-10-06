@@ -1,4 +1,4 @@
-name: CICD
+name: Data Migration
 
 on:
   push:
@@ -12,8 +12,7 @@ jobs:
 
     steps:
       # 1️⃣ Checkout repo
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       # 2️⃣ Installer Python et Kaggle
       - name: Install Python & Kaggle
@@ -36,11 +35,9 @@ jobs:
 
       # 5️⃣ Lancer Docker Compose Migration
       - name: Run Docker Compose Migration
-        working-directory: ./healthcare_migration
         run: docker compose up --build --abort-on-container-exit
 
       # 6️⃣ Arrêter et nettoyer Docker Compose
       - name: Shut down Docker Compose
-        working-directory: ./healthcare_migration
         if: always()
         run: docker compose down -v
