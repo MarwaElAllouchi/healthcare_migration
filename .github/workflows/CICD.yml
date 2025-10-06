@@ -74,7 +74,7 @@ jobs:
       - name: Wait for MongoDB
         run: |
           for i in {1..30}; do
-            if mongosh --host mongo_db -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
+            if mongosh --host localhost -u root -p root --authenticationDatabase admin --eval "db.adminCommand('ping')" &> /dev/null; then
               echo "MongoDB is ready."
               break
             fi
@@ -85,7 +85,7 @@ jobs:
       # 7️⃣ Initialize MongoDB users
       - name: Initialize MongoDB users
         run: |
-          mongosh --host mongo_db -u root -p root --authenticationDatabase admin <<EOF
+          mongosh --host localhost -u root -p root --authenticationDatabase admin <<EOF
             use healthcareDB
 
             db.createUser({
