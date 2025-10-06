@@ -80,7 +80,6 @@ jobs:
       # 6️⃣ Créer les utilisateurs
       - name: Initialize MongoDB users
         run: |
-          run: |
           mongosh --host localhost -u root -p root --authenticationDatabase admin <<EOF
             use healthcareDB
 
@@ -96,7 +95,8 @@ jobs:
               user: "${{ secrets.MONGO_USER2 }}",
               pwd: "${{ secrets.MONGO_PASSWORD2 }}",
               roles: [{ role: "readWrite", db: "healthcareDB" }]
-            })EOF
+            })
+            EOF
       # 8️⃣ Run migration
       - name: Run migration
         run: |
