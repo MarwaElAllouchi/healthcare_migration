@@ -14,10 +14,9 @@ jobs:
 
     steps:
       # 1️⃣ Checkout repo
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      # 2️⃣ Installer Python et Kaggle
+      # 2️⃣ Installer Python & Kaggle
       - name: Install Python & Kaggle
         run: |
           python -m pip install --upgrade pip
@@ -36,11 +35,11 @@ jobs:
           mkdir -p data
           kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip
 
-      # 5️⃣ Build et lancer Docker Compose
+      # 5️⃣ Lancer Docker Compose
       - name: Run Docker Compose Migration
-        run: docker compose -f docker-compose.yml up --build --abort-on-container-exit
+        run: docker compose up --build --abort-on-container-exit
 
       # 6️⃣ Arrêter et nettoyer Docker Compose
       - name: Shut down Docker Compose
         if: always()
-        run: docker compose -f docker-compose.yml down -v
+        run: docker compose down -v
