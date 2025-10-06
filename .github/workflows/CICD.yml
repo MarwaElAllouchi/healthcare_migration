@@ -80,23 +80,24 @@ jobs:
       # 6️⃣ Créer les utilisateurs
       - name: Initialize MongoDB users
         run: |
+                - name: Initialize MongoDB users
+        run: |
           mongosh --host localhost -u root -p root --authenticationDatabase admin <<EOF
-            use healthcareDB
+          use healthcareDB;
 
-            // Utilisateur lecteur
-            db.createUser({
-              user: "${{ secrets.MONGO_USER1 }}",
-              pwd: "${{ secrets.MONGO_PASSWORD1 }}",
-              roles: [{ role: "read", db: "healthcareDB" }]
-            });
+          db.createUser({
+            user: "${{ secrets.MONGO_USER1 }}",
+            pwd: "${{ secrets.MONGO_PASSWORD1 }}",
+            roles: [{ role: "read", db: "healthcareDB" }]
+          });
 
-            // Utilisateur manager
-            db.createUser({
-              user: "${{ secrets.MONGO_USER2 }}",
-              pwd: "${{ secrets.MONGO_PASSWORD2 }}",
-              roles: [{ role: "readWrite", db: "healthcareDB" }]
-            });
-            EOF
+          db.createUser({
+            user: "${{ secrets.MONGO_USER2 }}",
+            pwd: "${{ secrets.MONGO_PASSWORD2 }}",
+            roles: [{ role: "readWrite", db: "healthcareDB" }]
+          });
+          EOF
+
       # 8️⃣ Run migration
       - name: Run migration
         run: |
