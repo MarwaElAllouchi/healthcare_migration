@@ -24,10 +24,10 @@ services:
       - mongo_data:/data/db       # volume persistant
       - ./init-scripts:/docker-entrypoint-initdb.d  # scripts init
     healthcheck:
-    test: ["CMD", "mongo", "--username", "${MONGO_ROOT_USERNAME}", "--password", "${MONGO_ROOT_PASSWORD}", "--eval", "db.adminCommand('ping')"]
-    interval: 2s
-    timeout: 5s
-    retries: 10
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   migration:
     build: .
     container_name: healthcare_migration-migration

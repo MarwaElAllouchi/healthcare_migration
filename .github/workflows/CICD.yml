@@ -15,14 +15,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Debug workspace (vérifie que docker-compose.yml est bien présent)
-      - name: Debug workspace
+      # 2️⃣ Display workspace
+      - name: Display workspace
         run: |
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           ls -la $GITHUB_WORKSPACE
-          find $GITHUB_WORKSPACE -maxdepth 3 -type f
 
-      # 3️⃣ Installer Python & Kaggle
+      # 3️⃣ Install Python & Kaggle
       - name: Install Python & Kaggle
         run: |
           python -m pip install --upgrade pip
@@ -38,33 +37,30 @@ jobs:
           echo "{\"username\":\"${KAGGLE_USERNAME}\",\"key\":\"${KAGGLE_KEY}\"}" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
 
-      # 5️⃣ Download dataset from Kaggle
+      # 5️⃣ Download CSV dataset from Kaggle
       - name: Download CSV dataset from Kaggle
         run: |
           mkdir -p data
           kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip
           ls -la data
 
-      # 6️⃣ Trouver docker-compose.yml (insensible à la casse)
-      - id: finddc
-        name: Find docker-compose.yml
-        run: |
-          DC=$(find "$GITHUB_WORKSPACE" -maxdepth 3 -type f -iname 'docker-compose.yml' | head -n1)
-          if [ -z "$DC" ]; then
-            echo "docker-compose.yml not found; aborting"
-            exit 1
-          fi
-          echo "Found docker-compose file at: $DC"
-          echo "path=$DC" >> $GITHUB_OUTPUT
-
-      # 7️⃣ Build et run Docker Compose
+      # 6️⃣ Build and run Docker Compose
       - name: Build and run Docker Compose
+        working-directory: ./healthcare_migration
+        env:
+          MONGO_ROOT_USERNAME: root
+          MONGO_ROOT_PASSWORD: root
+          MONGO_DATABASE: healthcareDB
+          READER_USER: ${{ secrets.MONGO_USER1 }}
+          READER_PASS: ${{ secrets.MONGO_PASSWORD1 }}
+          MANAGER_USER: ${{ secrets.MONGO_USER2 }}
+          MANAGER_PASS: ${{ secrets.MONGO_PASSWORD2 }}
         run: |
-          echo "Using docker-compose file: ${{ steps.finddc.outputs.path }}"
-          docker compose -f "${{ steps.finddc.outputs.path }}" up --build --abort-on-container-exit
+          docker compose -f Docker-compose.yml up --build --abort-on-container-exit
 
-      # 8️⃣ Clean up
+      # 7️⃣ Clean up
       - name: Clean up
         if: always()
+        working-directory: ./healthcare_migration
         run: |
-          docker compose -f "${{ steps.finddc.outputs.path }}" down -v
+          docker compose -f Docker-compose.yml down -v
