@@ -6,7 +6,7 @@ services:
       - my_netwrok
     ports:
       - "27017:27017"
-      
+
     environment:
       # Variables root
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
@@ -32,7 +32,7 @@ services:
     container_name: healthcare_migration-migration
     depends_on:
       mongo_db:
-       condition: service_healthy
+       #condition: service_healthy
     networks:
       - my_netwrok
     environment:
