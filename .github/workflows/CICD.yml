@@ -1,4 +1,4 @@
-name: Run Docker Compose Tests
+name: CICD
 
 on:
 push:
@@ -65,4 +65,3 @@ steps:
     if: always()
     run: |
       docker compose -f "${{ steps.finddc.outputs.path }}" down -v
-```
