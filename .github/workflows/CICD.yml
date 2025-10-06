@@ -46,7 +46,7 @@ jobs:
 
       # 6️⃣ Build and run Docker Compose
       - name: Build and run Docker Compose
-        working-directory: ./healthcare_migration
+        working-directory: /healthcare_migration
         env:
           MONGO_ROOT_USERNAME: root
           MONGO_ROOT_PASSWORD: root
@@ -61,6 +61,6 @@ jobs:
       # 7️⃣ Clean up
       - name: Clean up
         if: always()
-        working-directory: ./healthcare_migration
+        working-directory: /healthcare_migration
         run: |
           docker compose -f Docker-compose.yml down -v
