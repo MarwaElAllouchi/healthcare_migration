@@ -110,7 +110,7 @@ jobs:
             -e MONGO_COLLECTION=patients \
             -e CSV_PATH=/app/data/healthcare_dataset.csv \
             -e EXPORT_PATH=/app/data/exported_patients.csv \
-             bash ./.init/entrypoint.sh migrate"
+             bash ./.init/entrypoint.sh migrate
 
       # 9️⃣ Run tests
       - name: Run Pytest
