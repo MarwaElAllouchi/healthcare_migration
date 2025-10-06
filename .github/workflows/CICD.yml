@@ -1,22 +1,21 @@
-name: Test CI/CD
+name: CICD
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-    workflow_dispatch:
+  workflow_dispatch:
+
 jobs:
   migration:
     runs-on: ubuntu-latest
 
     steps:
       # 1️⃣ Checkout repo
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      # 2️⃣ Installer Python & Kaggle
+      # 2️⃣ Installer Python et Kaggle
       - name: Install Python & Kaggle
         run: |
           python -m pip install --upgrade pip
@@ -35,11 +34,13 @@ jobs:
           mkdir -p data
           kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip
 
-      # 5️⃣ Lancer Docker Compose
+      # 5️⃣ Lancer Docker Compose Migration
       - name: Run Docker Compose Migration
+        working-directory: ./healthcare_migration
         run: docker compose up --build --abort-on-container-exit
 
       # 6️⃣ Arrêter et nettoyer Docker Compose
       - name: Shut down Docker Compose
+        working-directory: ./healthcare_migration
         if: always()
         run: docker compose down -v
