@@ -1,69 +1,68 @@
 name: Test CI/CD
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+push:
+branches:
+- main
+pull_request:
+branches:
+- main
+
 jobs:
- test:
-  runs-on: ubuntu-latest
+test:
+ runs-on: ubuntu-latest 
 
  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+  - name: Checkout repository
+    uses: actions/checkout@v3
 
-    - name: Display current directory (debug)
-      run: |
-        echo "PWD: $PWD"
-        echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-        echo "Files in workspace:"
-        ls -la "$GITHUB_WORKSPACE" || true
-        echo "Recursive listing (first 3 levels):"
-        find "$GITHUB_WORKSPACE" -maxdepth 3 -type f -printf '%P\n' | sed -n '1,200p' || true
+  - name: Display current directory (debug)
+    run: |
+      echo "PWD: $PWD"
+      echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+      echo "Files in workspace:"
+      ls -la "$GITHUB_WORKSPACE" || true
+      echo "Recursive listing (first 3 levels):"
+      find "$GITHUB_WORKSPACE" -maxdepth 3 -type f -printf '%P\n' | sed -n '1,200p' || true
 
-    - name: Install Python & Kaggle
-      run: |
-        python -m pip install --upgrade pip
-        pip install kaggle
+  - name: Install Python & Kaggle
+    run: |
+      python -m pip install --upgrade pip
+      pip install kaggle
 
-    - name: Setup Kaggle API
-      env:
-        KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-        KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-      run: |
-        mkdir -p ~/.kaggle
-        echo "{\"username\":\"${KAGGLE_USERNAME}\",\"key\":\"${KAGGLE_KEY}\"}" > ~/.kaggle/kaggle.json
-        chmod 600 ~/.kaggle/kaggle.json
+  - name: Setup Kaggle API
+    env:
+      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+    run: |
+      mkdir -p ~/.kaggle
+      echo "{\"username\":\"${KAGGLE_USERNAME}\",\"key\":\"${KAGGLE_KEY}\"}" > ~/.kaggle/kaggle.json
+      chmod 600 ~/.kaggle/kaggle.json
 
-    - name: Download CSV dataset from Kaggle
-      run: |
-        mkdir -p data
-        kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip || true
-        echo "Downloaded files in ./data/ :"
-        ls -la data || true
+  - name: Download CSV dataset from Kaggle
+    run: |
+      mkdir -p data
+      kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip || true
+      echo "Downloaded files in ./data/ :"
+      ls -la data || true
 
-    - id: finddc
-      name: Find docker-compose.yml
-      run: |
-        # Try to find docker-compose.yml inside workspace (search depth 3)
-        DC=$(find "$GITHUB_WORKSPACE" -maxdepth 3 -type f -name 'docker-compose.yml' | head -n1 || true)
-        if [ -z "$DC" ]; then
-          echo "docker-compose.yml not found in workspace; aborting"
-          exit 1
-        fi
-        echo "Found docker-compose at: $DC"
-        echo "path=$DC" >> $GITHUB_OUTPUT
+  - id: finddc
+    name: Find docker-compose.yml
+    run: |
+      DC=$(find "$GITHUB_WORKSPACE" -maxdepth 3 -type f -name 'docker-compose.yml' | head -n1 || true)
+      if [ -z "$DC" ]; then
+        echo "docker-compose.yml not found in workspace; aborting"
+        exit 1
+      fi
+      echo "Found docker-compose at: $DC"
+      echo "path=$DC" >> $GITHUB_OUTPUT
 
-    - name: Build and run Docker Compose
-      run: |
-        echo "Using docker-compose file: ${{ steps.finddc.outputs.path }}"
-        docker compose -f "${{ steps.finddc.outputs.path }}" up --build --abort-on-container-exit
+  - name: Build and run Docker Compose
+    run: |
+      echo "Using docker-compose file: ${{ steps.finddc.outputs.path }}"
+      docker compose -f "${{ steps.finddc.outputs.path }}" up --build --abort-on-container-exit
 
-    - name: Clean up
-      if: always()
-      run: |
-        docker compose -f "${{ steps.finddc.outputs.path }}" down -v
-        
+  - name: Clean up
+    if: always()
+    run: |
+      docker compose -f "${{ steps.finddc.outputs.path }}" down -v
