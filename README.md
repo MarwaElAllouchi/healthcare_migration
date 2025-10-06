@@ -136,10 +136,10 @@ docker exec -it healthcare_migration-mongo_db mongosh -u root -p $MONGO_INITDB_R
 Exemple .env.example :
 
 MONGO_INITDB_ROOT_USERNAME=root
-MONGO_INITDB_ROOT_PASSWORD=SuperSecretRootPass
+MONGO_INITDB_ROOT_PASSWOR1d=root
 MONGO_DB=healthcareDB
-READUSER_PASS=readerPass
-MANAGER_PASS=managerPass
+READUSER_PASS=****
+MANAGER_PASS =***
 CSV_PATH=data/healthcare_dataset.csv
 EXPORT_PATH=data/exported_patients.csv
 
@@ -170,9 +170,9 @@ Contrôles :
 insertion des données
 absence de valeurs null
 pas de doublons
-
-pytest tests/unit/
-pytest tests/integration/
+lancement de tests:
+test unitaire : pytest tests/unit/
+test integration :pytest tests/integration/
 
 ### 💾 Export des données
 df = pd.DataFrame(list(collection.find({}, {'_id': 0})))

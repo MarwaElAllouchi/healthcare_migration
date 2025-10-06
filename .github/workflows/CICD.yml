@@ -85,15 +85,15 @@ jobs:
 
             // Utilisateur lecteur
             db.createUser({
-              user: "readuser",
-              pwd: "readpass",
+              user:${{ secrets.MONGO_USER1}},
+              pwd:${{ secrets.MONGO_PASSWORD1}},
               roles: [{ role: "read", db: "healthcareDB" }]
             })
 
             // Utilisateur manager
             db.createUser({
-              user: "manageruser",
-              pwd: "managerpass",
+              user: ${{ secrets.MONGO_USER2}},
+              pwd: ${{ secrets.MONGO_PASSWORD2}},
               roles: [{ role: "readWrite", db: "healthcareDB" }]
             })
           EOF
