@@ -1,4 +1,4 @@
-name: CICD
+name: Data Migration
 
 on:
   push:
@@ -11,7 +11,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Show current directory and files
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Files in current directory:"
+          ls -R
 
       - name: Install Python & Kaggle
         run: |
@@ -30,10 +38,11 @@ jobs:
           kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip
 
       - name: Run Docker Compose Migration
-        working-directory: ${{ github.workspace }}
-        run: docker compose up --build --abort-on-container-exit
+        run: |
+          echo "Running Docker Compose from:"
+          pwd
+          docker compose -f ./docker-compose.yml up --build --abort-on-container-exit
 
       - name: Shut down Docker Compose
-        working-directory: ${{ github.workspace }}
         if: always()
-        run: docker compose down -v
+        run: docker compose -f ./docker-compose.yml down -v
