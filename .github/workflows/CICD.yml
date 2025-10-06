@@ -61,6 +61,5 @@ jobs:
       # 7️⃣ Clean up
       - name: Clean up
         if: always()
-        working-directory: /healthcare_migration
         run: |
           docker compose -f Docker-compose.yml down -v
