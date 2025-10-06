@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 import os
 from pymongo.errors import ConnectionFailure, ConfigurationError
+from pprint import pprint
 
 # ===================== Fonctions utilitaires =====================
 
@@ -96,6 +97,46 @@ def exporter_collection_csv(collection: pymongo.collection.Collection, export_pa
     df_export.to_csv(export_path, index=False)
     print("✅ Export terminé.")
 
+def crud_examples(collection: pymongo.collection.Collection): 
+    print(f"collection name '{collection.name}'")
+    # --- CREATE ---
+    print(f"=================Crud Exempels===================")
+
+    patient = {
+        "Name":"Test Test",
+        "Age": 45,
+        "Gender": "Male",
+        "Blood_Type": "Hypertension",
+        "Medical_Condition": 'Hypertension',
+        "Doctor": "Justin Moore Jr.",
+        "Hospital": 'Houston Plc Test '
+        }
+    result = collection.insert_one(patient)
+    print(f"Patient inséré avec _id: {result.inserted_id}")
+    # --- READ ---
+    # Lire un patient spécifique
+    patient_lu = collection.find_one({"Name":"Test Test"})
+    print("Patient trouvé :")
+    pprint(patient_lu)
+
+    # Lire plusieurs patients
+    for p in collection.find({"Age": {"$gt": 40}}):
+      print("Patient > 40 ans :")
+      pprint(p)
+    # --- UPDATE ---
+    result_update = collection.update_one(
+        {"Name":"Test Test"},
+        {"$set": {"Medical_Condition":"Diabète"}}
+    )
+    print(f"Documents modifiés : {result_update.modified_count}")
+
+    # --- DELETE ---
+    result_delete = collection.delete_one({"Name":"Test Test"})
+    print(f"Documents supprimés : {result_delete.deleted_count}")
+
+
+    print(f"=================Fin Crud Exempels===================")
+
 # ===================== Script principal =====================
 
 def main():
@@ -107,6 +148,7 @@ def main():
 
     print("je suis laaaaaaaaaaaaa",df.shape)
     collection = connecter_mongodb()
+    crud_examples(collection)
     inserer_records(collection, records)
     exporter_collection_csv(collection, EXPORT_PATH)
 

@@ -172,7 +172,7 @@ absence de valeurs null
 pas de doublons
 lancement de tests:
 test unitaire : pytest tests/unit/
-test integration :pytest tests/integration/
+test d'integration : pytest tests/integration/
 
 ### 💾 Export des données
 df = pd.DataFrame(list(collection.find({}, {'_id': 0})))
