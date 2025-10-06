@@ -9,21 +9,26 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Display current directory (debug)
+      # 2️⃣ Debug workspace (vérifie que docker-compose.yml est bien présent)
+      - name: Debug workspace
         run: |
-          echo "PWD: $PWD"
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          ls -la "$GITHUB_WORKSPACE"
+          ls -la $GITHUB_WORKSPACE
+          find $GITHUB_WORKSPACE -maxdepth 3 -type f
 
+      # 3️⃣ Installer Python & Kaggle
       - name: Install Python & Kaggle
         run: |
           python -m pip install --upgrade pip
           pip install kaggle
 
+      # 4️⃣ Setup Kaggle API
       - name: Setup Kaggle API
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
@@ -33,26 +38,32 @@ jobs:
           echo "{\"username\":\"${KAGGLE_USERNAME}\",\"key\":\"${KAGGLE_KEY}\"}" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
 
+      # 5️⃣ Download dataset from Kaggle
       - name: Download CSV dataset from Kaggle
         run: |
           mkdir -p data
           kaggle datasets download -d prasad22/healthcare-dataset -p data --unzip
           ls -la data
 
+      # 6️⃣ Trouver docker-compose.yml (insensible à la casse)
       - id: finddc
         name: Find docker-compose.yml
         run: |
-          DC=$(find "$GITHUB_WORKSPACE" -maxdepth 3 -type f -name 'docker-compose.yml' | head -n1)
+          DC=$(find "$GITHUB_WORKSPACE" -maxdepth 3 -type f -iname 'docker-compose.yml' | head -n1)
           if [ -z "$DC" ]; then
             echo "docker-compose.yml not found; aborting"
             exit 1
           fi
+          echo "Found docker-compose file at: $DC"
           echo "path=$DC" >> $GITHUB_OUTPUT
 
+      # 7️⃣ Build et run Docker Compose
       - name: Build and run Docker Compose
         run: |
+          echo "Using docker-compose file: ${{ steps.finddc.outputs.path }}"
           docker compose -f "${{ steps.finddc.outputs.path }}" up --build --abort-on-container-exit
 
+      # 8️⃣ Clean up
       - name: Clean up
         if: always()
         run: |
