@@ -3,7 +3,7 @@ name: Test CI/CD
 on:
   push:
     branches:
-      - fix/mongodb-env
+      - main
   pull_request:
 
 jobs:
