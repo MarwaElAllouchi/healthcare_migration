@@ -6,6 +6,13 @@ import os
 from pymongo.errors import ConnectionFailure, ConfigurationError
 from pprint import pprint
 
+
+# =============Essayer d'importer python-dotenv (pour local)=============
+try:
+    from dotenv import load_dotenv
+    DOTENV_AVAILABLE = True
+except ImportError:
+    DOTENV_AVAILABLE = False
 # ===================== Fonctions utilitaires =====================
 
 def clean_record(record: dict) -> dict:
@@ -55,34 +62,55 @@ def transformer_records(df: pd.DataFrame) -> list:
     """Nettoie chaque enregistrement du DataFrame et retourne une liste de dicts"""
     return [clean_record(record) for record in df.to_dict(orient="records")]
 
-def connecter_mongodb(retries: int = 20, delay: int = 2) -> pymongo.collection.Collection:
+def connecter_mongodb(
+    retries: int = 20,
+    delay: int = 2,
+    env_suffix: str = ""  # ex: "_TEST" pour base de test
+) -> pymongo.collection.Collection:
     """
-    Connexion à MongoDB avec le root et retour de la collection.
-    Attend que MongoDB soit prêt avant de continuer.
-    
-    retries : nombre de tentatives
-    delay : délai entre chaque tentative (en secondes)
+    Connexion à MongoDB, compatible local (.env), Docker et GitHub Actions.
     """
-    MONGO_HOST = os.getenv("MONGO_HOST", "mongo_db")
-    MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
-    MONGO_DB = os.getenv("MONGO_DB", "healthcareDB")
-    MONGO_COLLECTION = os.getenv("MONGO_COLLECTION", "patients")
-    MONGO_USER = os.getenv("MONGO_ROOT_USERNAME", "root")
-    MONGO_PASS = os.getenv("MONGO_ROOT_PASSWORD", "root")
 
-    MONGO_URI = f"mongodb://{MONGO_USER}:{MONGO_PASS}@{MONGO_HOST}:{MONGO_PORT}/{MONGO_DB}?authSource=admin"
-    print(f"✅ Connexion  à MongoDB sur {MONGO_URI}")
+    # Charger le .env local si disponible
+    if DOTENV_AVAILABLE and os.path.exists(".env"):
+        load_dotenv(override=False)
+        print("📄 Fichier .env chargé (en local)")
+    elif not DOTENV_AVAILABLE:
+        print("⚠️ python-dotenv non installé, variables système utilisées uniquement")
+
+    # Fonction pour lire une variable avec suffixe
+    def env(var_name, default=None):
+        return os.getenv(f"{var_name}{env_suffix}", default)
+
+    # Variables communes (identiques prod/test)
+    host = os.getenv("MONGO_HOST", "mongo_db")
+    port = int(os.getenv("MONGO_PORT", 27017))
+    username = os.getenv("MONGO_ROOT_USERNAME", "root")
+    password = os.getenv("MONGO_ROOT_PASSWORD", "root")
+
+    # Variables spécifiques (différentes si _TEST)
+    db_name = env("MONGO_DB", "healthcareDB")
+    collection_name = env("MONGO_COLLECTION", "patients")
+
+    # Construction URI
+    mongo_uri = f"mongodb://{username}:{password}@{host}:{port}/{db_name}?authSource=admin"
+    print(f"🔄 Tentative de connexion à MongoDB : {mongo_uri}")
+
+    # Tentatives de connexion
     for attempt in range(1, retries + 1):
         try:
-            client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-            client.admin.command('ping')  # vérifie que MongoDB répond
-            print(f"✅ Connexion réussie à MongoDB sur {MONGO_HOST}:{MONGO_PORT}")
-            db = client[MONGO_DB]
-            return db[MONGO_COLLECTION]
+            client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+            client.admin.command("ping")
+            print(f"✅ Connexion réussie à MongoDB ({host}:{port})")
+            db = client[db_name]
+            return db[collection_name]
         except (ConnectionFailure, ConfigurationError) as e:
-            print(f"⏳ Tentative {attempt}/{retries} : MongoDB non prête, retry dans {delay}s...")
+            print(f"⏳ Tentative {attempt}/{retries} : MongoDB non prête ({e}), retry dans {delay}s...")
             time.sleep(delay)
+
     raise ConnectionFailure(f"❌ Impossible de se connecter à MongoDB après {retries} tentatives.")
+
+
 
 def inserer_records(collection: pymongo.collection.Collection, records: list):
     """Vide la collection et insère les nouveaux enregistrements"""
@@ -142,12 +170,12 @@ def crud_examples(collection: pymongo.collection.Collection):
 
 def main():
     CSV_PATH = os.environ.get("CSV_PATH", "data/healthcare_dataset.csv")
-    EXPORT_PATH = os.environ.get("EXPORT_PATH", "data/exported_patients.csv")
+    EXPORT_PATH = os.environ.get("EXPORT_PATH", "data/export_patients.csv")
 
     df = charger_csv(CSV_PATH)
     records = transformer_records(df)
 
-    print("je suis laaaaaaaaaaaaa",df.shape)
+
     collection = connecter_mongodb()
     crud_examples(collection)
     inserer_records(collection, records)

@@ -9,10 +9,10 @@ until mongosh -u "$TEMP_ROOT_USER" -p "$TEMP_ROOT_PASS" --authenticationDatabase
 done
 echo "✅ MongoDB est prêt."
 
-echo "👤 Création des utilisateurs dans la DB $DB_NAME"
+echo "👤 Création des utilisateurs dans la DB $MONGO_DB"
 
 mongosh -u "$TEMP_ROOT_USER" -p "$TEMP_ROOT_PASS" --authenticationDatabase "admin" <<EOF
-use $DB_NAME
+use $MONGO_DB
 
 db.createUser({user: "$READER_USER", pwd: "$READER_PASS", roles:["read"]})
 db.createUser({user: "$MANAGER_USER", pwd: "$MANAGER_PASS", roles:["readWrite"]})

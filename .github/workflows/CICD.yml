@@ -3,7 +3,7 @@ name: Test CI/CD
 on:
   push:
     branches:
-      - main
+      - fix/mongodb-env
   pull_request:
 
 jobs:
@@ -48,13 +48,16 @@ jobs:
       - name: Build and run Docker Compose
        
         env:
-          MONGO_ROOT_USERNAME: root
-          MONGO_ROOT_PASSWORD: root
-          MONGO_DATABASE: healthcareDB
+          MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME}}
+          MONGO_ROOT_PASSWORD: ${{ secrets.MMONGO_ROOT_PASSWORD}}
+          MONGO_DB: ${{ secrets.MONGO_DATABASE}}
           READER_USER: ${{ secrets.MONGO_USER1 }}
           READER_PASS: ${{ secrets.MONGO_PASSWORD1 }}
           MANAGER_USER: ${{ secrets.MONGO_USER2 }}
           MANAGER_PASS: ${{ secrets.MONGO_PASSWORD2 }}
+          CSV_PATH_TEST: ${{secrets.CSV_PATH_TEST}}
+          MONGO_DB_TEST: ${secrets.MONGO_DB_TEST}}
+          MONGO_COLLECTION_TEST: ${{secrets.MONGO_COLLECTION_TEST}}
         run: |
           docker compose -f Docker-compose.yml up --build --abort-on-container-exit
 

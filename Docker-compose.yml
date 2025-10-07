@@ -12,9 +12,9 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
       # Database par défaut (pour le root)
-      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
       # Variables pour ton script init
-      DB_NAME: ${MONGO_DATABASE}
+      MONGO_DB: ${MONGO_DB}
       READER_USER: ${READER_USER}
       READER_PASS: ${READER_PASS}
       MANAGER_USER: ${MANAGER_USER}
@@ -36,11 +36,16 @@ services:
     networks:
       - my_netwrok
     environment:
-      MONGO_DB: ${MONGO_DATABASE}
-      MONGO_COLLECTION: patients
-      CSV_PATH: data/healthcare_dataset.csv
+     # Base principale
+      MONGO_DB: ${MONGO_DB}
+      MONGO_COLLECTION: ${MONGO_COLLECTION}
+      CSV_PATH: ${CSV_PATH}
       MONGO_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
       MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      # Base test (_TEST)
+      CSV_PATH_TEST: ${CSV_PATH_TEST}
+      MONGO_DB_TEST: ${MONGO_DB_TEST}
+      MONGO_COLLECTION_TEST: ${MONGO_COLLECTION_TEST}
     volumes:
       - .:/app
     command: ["bash", "./.init/entrypoint.sh", "all"]  # par défaut: migration + tests

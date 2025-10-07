@@ -13,8 +13,6 @@ case "$1" in
     
   integration)
     echo "🔗 Lancement des tests d'intégration avec données factices..."
-    export MONGO_DB=healthcareDB_test
-    export CSV_PATH=tests/data/healthcare_dataset_test.csv
     pytest tests/integration -v
     ;;
     
@@ -28,8 +26,6 @@ case "$1" in
     python scripts/migrate_patients.py
     
     echo "🔗 Tests d'intégration avec données factices..."
-    export MONGO_DB=healthcareDB_test
-    export CSV_PATH=tests/data/healthcare_dataset_test.csv
     pytest tests/integration -v
     ;;
     
