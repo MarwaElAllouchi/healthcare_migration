@@ -48,6 +48,8 @@ jobs:
       - name: Build and run Docker Compose
        
         env:
+          MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME}}
+          MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MMONGO_ROOT_PASSWORD}}
           MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME}}
           MONGO_ROOT_PASSWORD: ${{ secrets.MMONGO_ROOT_PASSWORD}}
           MONGO_DB: ${{ secrets.MONGO_DB}}
