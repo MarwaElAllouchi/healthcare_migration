@@ -1,6 +1,6 @@
 #!/bin/bash
 export MONGO_COLLECTION_TEST="${MONGO_COLLECTION_TEST:-patients_test}"
-export CSV_PATH_TEST="${CSV_PATH_TEST:-/app/data/healthcare_dataset_test.csv}"
+export CSV_PATH_TEST="${CSV_PATH_TEST:-/app/tests/data_test/healthcare_dataset_test.csv}"
 case "$1" in
   migrate)
     echo "🚀 Lancement de la migration réelle..."
