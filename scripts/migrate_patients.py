@@ -87,7 +87,7 @@ def connecter_mongodb(
     port = int(os.getenv("MONGO_PORT", 27017))
     username = os.getenv("MONGO_ROOT_USERNAME", "root")
     password = os.getenv("MONGO_ROOT_PASSWORD", "root")
-
+    
     # Variables spécifiques (différentes si _TEST)
     db_name = env("MONGO_DB", "healthcareDB")
     collection_name = env("MONGO_COLLECTION", "patients")
@@ -126,7 +126,7 @@ def exporter_collection_csv(collection: pymongo.collection.Collection, export_pa
     print("✅ Export terminé.")
 
 def crud_examples(collection: pymongo.collection.Collection): 
-    print(f"collection name '{collection.name}'")
+    
     # --- CREATE ---
     collection.delete_many({})
     print(f"=================Crud Exempels===================")
@@ -169,12 +169,11 @@ def crud_examples(collection: pymongo.collection.Collection):
 # ===================== Script principal =====================
 
 def main():
-    CSV_PATH = os.environ.get("CSV_PATH", "data/healthcare_dataset.csv")
-    EXPORT_PATH = os.environ.get("EXPORT_PATH", "data/export_patients.csv")
+    CSV_PATH = os.getenv("CSV_PATH", "data/healthcare_dataset.csv")
+    EXPORT_PATH = os.getenv("EXPORT_PATH", "data/export_patients.csv")
 
     df = charger_csv(CSV_PATH)
     records = transformer_records(df)
-
 
     collection = connecter_mongodb()
     crud_examples(collection)
