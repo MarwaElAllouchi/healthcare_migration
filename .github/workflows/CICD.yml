@@ -50,17 +50,17 @@ jobs:
         env:
           MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME}}
           MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD}}
-          MONGO_INITDB_DATABASE: ${{ secrets.MONGO_DB}}
+          MONGO_INITDB_DATABASE: ${{secrets.MONGO_DB}}
           MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME}}
           MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD}}
-          MONGO_DB: ${{ secrets.MONGO_DB}}
+          MONGO_DB: ${{secrets.MONGO_DB}}
           READER_USER: ${{ secrets.MONGO_USER1 }}
           READER_PASS: ${{ secrets.MONGO_PASSWORD1 }}
           MANAGER_USER: ${{ secrets.MONGO_USER2 }}
           MANAGER_PASS: ${{ secrets.MONGO_PASSWORD2 }}
           CSV_PATH:  ${{ secrets.CSV_PATH }}
           CSV_PATH_TEST: ${{secrets.CSV_PATH_TEST}}
-          MONGO_DB_TEST: ${secrets.MONGO_DB_TEST}}
+          MONGO_DB_TEST: ${{secrets.MONGO_DB_TEST}}
           MONGO_COLLECTION_TEST: ${{secrets.MONGO_COLLECTION_TEST}}
         run: |
           docker compose -f Docker-compose.yml up --build --abort-on-container-exit

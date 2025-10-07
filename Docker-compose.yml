@@ -13,7 +13,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
       # Database par défaut (pour le root)
       MONGO_INITDB_DATABASE: ${MONGO_DB}
-      # Variables pour ton script init
+      # Variables pour script init
       MONGO_DB: ${MONGO_DB}
       READER_USER: ${READER_USER}
       READER_PASS: ${READER_PASS}
