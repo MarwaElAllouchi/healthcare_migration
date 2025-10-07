@@ -62,6 +62,7 @@ jobs:
           CSV_PATH_TEST: ${{secrets.CSV_PATH_TEST}}
           MONGO_DB_TEST: ${{secrets.MONGO_DB_TEST}}
           MONGO_COLLECTION_TEST: ${{secrets.MONGO_COLLECTION_TEST}}
+          MONGO_COLLECTION: ${{secrets.MONGO_COLLECTION}}
         run: |
           docker compose -f Docker-compose.yml up --build --abort-on-container-exit
 
