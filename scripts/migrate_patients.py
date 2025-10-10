@@ -125,44 +125,91 @@ def exporter_collection_csv(collection: pymongo.collection.Collection, export_pa
     df_export.to_csv(export_path, index=False)
     print("✅ Export terminé.")
 
-def crud_examples(collection: pymongo.collection.Collection): 
-    
+def create_document(collection, document):
+    """CREATE : insère un document dans une collection"""
+    try:
+        result = collection.insert_one(document)
+        print(f"✅ Document inséré avec _id : {result.inserted_id}")
+        return result.inserted_id
+    except Exception as e:
+        print(f"❌ Erreur lors de la création : {e}")
+
+def read_documents(collection, filter_query=None):
+    """READ : lit un ou plusieurs documents selon un filtre"""
+    try:
+        filter_query = filter_query or {}
+        results = list(collection.find(filter_query))
+        print(f"📖 {len(results)} document(s) trouvé(s) :")
+        for doc in results:
+            pprint(doc)
+        return results
+    except Exception as e:
+        print(f"❌ Erreur lors de la lecture : {e}")
+
+
+def update_one_document(collection, filter_query, update_values):
+    """Met à jour un seul document"""
+    try:
+        result = collection.update_one(filter_query, {"$set": update_values})
+        print(f"🩵 Document modifié : {result.modified_count}")
+        return result.modified_count
+    except Exception as e:
+        print(f"❌ Erreur update_one : {e}")
+        return 0
+
+def update_many_documents(collection, filter_query, update_values):
+    """Met à jour plusieurs documents"""
+    try:
+        result = collection.update_many(filter_query, {"$set": update_values})
+        print(f"🩵 Documents modifiés : {result.modified_count}")
+        return result.modified_count
+    except Exception as e:
+        print(f"❌ Erreur update_many : {e}")
+        return 0
+
+def delete_documents(collection, filter_query):
+    """DELETE : supprime les documents correspondant au filtre"""
+    try:
+        result = collection.delete_one(filter_query)
+        print(f"🗑️  Documents supprimés : {result.deleted_count}")
+        return result.deleted_count
+    except Exception as e:
+        print(f"❌ Erreur lors de la suppression : {e}")
+
+def delete_many_documents(collection, filter_query=None):
+
+    """DELETE MANY : supprime plusieurs documents ou toute la collection"""
+    try:
+        filter_query = filter_query or {}  # Si aucun filtre => tout supprimer
+        result = collection.delete_many(filter_query)
+        print(f"🗑️  Documents supprimés : {result.deleted_count}")
+        return result.deleted_count
+    except Exception as e:
+        print(f"❌ Erreur lors de la suppression multiple : {e}")
+
+def crud_examples(collection: pymongo.collection.Collection):  
     # --- CREATE ---
     collection.delete_many({})
     print(f"=================Crud Exempels===================")
     
+     # --- CREATE ---
     patient = {
-        "Name":"Test Test",
+        "Name": "Test Test",
         "Age": 45,
         "Gender": "Male",
-        "Blood_Type": "Hypertension",
-        "Medical_Condition": 'Hypertension',
+        "Medical_Condition": "Hypertension",
         "Doctor": "Justin Moore Jr.",
-        "Hospital": 'Houston Plc Test '
-        }
-    result = collection.insert_one(patient)
-    print(f"Patient inséré avec _id: {result.inserted_id}")
+        "Hospital": "Houston Plc Test"
+    }
+    
+    result=create_document(collection, patient)
+   
     # --- READ ---
-    # Lire un patient spécifique
-    patient_lu = collection.find_one({"Name":"Test Test"})
-    print("Patient trouvé :")
-    pprint(patient_lu)
-
-    # Lire plusieurs patients
-    for p in collection.find({"Age": {"$gt": 40}}):
-      print("Patient > 40 ans :")
-      pprint(p)
-    # --- UPDATE ---
-    result_update = collection.update_one(
-        {"Name":"Test Test"},
-        {"$set": {"Medical_Condition":"Diabète"}}
-    )
-    print(f"Documents modifiés : {result_update.modified_count}")
-
+    read_documents(collection, {"Age": {"$gt": 40}})
+    # ----Update ---
+    update_one_document(collection,{"_id": result},{"Medical_Condition":"Diabète"})
     # --- DELETE ---
-    result_delete = collection.delete_one({"Name":"Test Test"})
-    print(f"Documents supprimés : {result_delete.deleted_count}")
-
+    delete_documents(collection, {"Name": "Test Test"})
 
     print(f"=================Fin Crud Exempels===================")
 
